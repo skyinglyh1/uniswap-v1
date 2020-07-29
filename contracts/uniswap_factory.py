@@ -26,8 +26,6 @@ TOKEN_TO_EXCHANGE_PREFIX = "tokenToEx"
 EXCHANGE_TO_TOKEN_PREFIX = "ExToToken"
 ID_TO_TOKEN_PREFIX = "IdToToken"
 
-PROXY_HASH_KEY = "Proxy"
-
 NewExchangeEvent = RegisterAction("NewExchange", "token", "exchange")
 
 def Main(operation, args):
