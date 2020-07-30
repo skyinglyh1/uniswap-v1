@@ -14,18 +14,17 @@ from ontology.builtins import concat, state
 from ontology.libont import bytearray_reverse, AddressFromVmCode
 from ontology.interop.System.App import RegisterAppCall, DynamicAppCall
 
-Operator = Base58ToAddress("AQf4Mzu1YJrhz9f3aRkkwSm9n3qhXGSh4p")  # root operator
 ZERO_ADDRESS = bytearray(b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00')
 ONT_ADDRESS = bytearray(b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01')
 ONG_ADDRESS = bytearray(b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02')
-NATIVE_ASSET_ADDRESS = ONT_ADDRESS
+NATIVE_ASSET_ADDRESS = ONG_ADDRESS
 
 NAME = "Uniswap V1"
 SYMBOL= "UNI-V1"
-DECIMALS= 18
+DECIMALS= 9
 TOTAL_SUPPLY_KEY = "totalSupply"
 BALANCE_PREFIX = "balance"
-ALLOWANCE_PREFIX = "allowance"
+APPROVE_PREFIX = "allowance"
 
 TOKEN_KEY = "token"
 FACTORY_KEY = "factory"
@@ -157,7 +156,113 @@ def Main(operation, args):
         token_addr = args[4]
         invoker = args[5]
         return tokenToTokenSwapOutput(tokens_bought, max_tokens_sold, max_ong_sold, deadline, token_addr, invoker)
-    # TODO: add method
+    if operation == "tokenToTokenTransferOutput":
+        assert (len(args) == 7)
+        tokens_bought = args[0]
+        max_tokens_sold = args[1]
+        max_ong_sold = args[2]
+        deadline = args[3]
+        recipient = args[4]
+        token_addr = args[5]
+        invoker = args[6]
+        return tokenToTokenTransferOutput(tokens_bought, max_tokens_sold, max_ong_sold, deadline, recipient, token_addr, invoker)
+    if operation == "tokenToExchangeSwapInput":
+        assert (len(args) == 6)
+        tokens_sold = args[0]
+        min_tokens_bought = args[1]
+        min_ong_bought = args[2]
+        deadline = args[3]
+        exchange_addr = args[4]
+        invoker = args[5]
+        return tokenToExchangeSwapInput(tokens_sold, min_tokens_bought, min_ong_bought, deadline, exchange_addr, invoker)
+    if operation == "tokenToExchangeTransferInput":
+        assert (len(args) == 7)
+        tokens_sold = args[0]
+        min_tokens_bought = args[1]
+        min_ong_bought = args[2]
+        deadline = args[3]
+        recipient = args[4]
+        exchange_addr = args[5]
+        invoker = args[6]
+        return tokenToExchangeTransferInput(tokens_sold, min_tokens_bought, min_ong_bought, deadline, recipient, exchange_addr, invoker)
+    if operation == "tokenToExchangeSwapOutput":
+        assert (len(args) == 6)
+        tokens_bought = args[0]
+        max_tokens_sold = args[1]
+        max_ong_sold = args[2]
+        deadline = args[3]
+        exchange_addr = args[4]
+        invoker = args[5]
+        return tokenToExchangeSwapOutput(tokens_bought, max_tokens_sold, max_ong_sold, deadline, exchange_addr, invoker)
+    if operation == "tokenToExchangeTransferOutput":
+        assert (len(args) == 7)
+        tokens_bought = args[0]
+        max_tokens_sold = args[1]
+        max_ong_sold = args[2]
+        deadline = args[3]
+        recipient = args[4]
+        exchange_addr = args[5]
+        invoker = args[6]
+        return tokenToExchangeTransferOutput(tokens_bought, max_tokens_sold, max_ong_sold, deadline, recipient, exchange_addr, invoker)
+    if operation == "getOngToTokenInputPrice":
+        assert (len(args) == 1)
+        ong_sold = args[0]
+        return getOngToTokenInputPrice(ong_sold)
+    if operation == "getOngToTokenOutputPrice":
+        assert (len(args) == 1)
+        tokens_bought = args[0]
+        return getOngToTokenOutputPrice(tokens_bought)
+    if operation == "getTokenToOngInputPrice":
+        assert (len(args) == 1)
+        tokens_sold = args[0]
+        return getTokenToOngInputPrice(tokens_sold)
+    if operation == "getTokenToOngOutputPrice":
+        assert (len(args) == 1)
+        ong_bought = args[0]
+        return getTokenToOngOutputPrice(ong_bought)
+    if operation == "tokenAddress":
+        return tokenAddress()
+    if operation == "factoryAddress":
+        return factoryAddress()
+
+    if operation == "name":
+        return name()
+    if operation == "symbol":
+        return symbol()
+    if operation == "decimals":
+        return decimals()
+    if operation == "totalSupply":
+        return totalSupply()
+    if operation == "balanceOf":
+        assert (len(args) == 1)
+        owner = args[0]
+        return balanceOf(owner)
+    if operation == "transfer":
+        assert (len(args) == 3)
+        from_acct = args[0]
+        to_acct = args[1]
+        amount = args[2]
+        return transfer(from_acct, to_acct, amount)
+    if operation == "transferMulti":
+        return transferMulti(args)
+    if operation == "transferFrom":
+        assert (len(args) == 4)
+        spender = args[0]
+        from_acct = args[1]
+        to_acct = args[2]
+        amount = args[3]
+        return transferFrom(spender, from_acct, to_acct, amount)
+    if operation == "approve":
+        assert (len(args) == 3)
+        owner = args[0]
+        spender = args[1]
+        amount = args[2]
+        return approve(owner, spender, amount)
+    if operation == "allowance":
+        assert (len(args) == 2)
+        owner = args[0]
+        spender = args[1]
+        return allowance(owner, spender)
     return False
 
 
@@ -294,7 +399,7 @@ def removeLiquidity(amount, min_ong, min_tokens, deadline, withdrawer):
 
 def _ongToTokenInput(ong_sold, min_tokens, deadline, buyer, recipient):
     # Check signature of buyer
-    CheckWitness(buyer)
+    assert (CheckWitness(buyer))
     assert (deadline >= GetTime() and ong_sold > 0 and min_tokens > 0)
     # Obtain the token balance and native asset balance
     tokenHash = tokenAddress()
@@ -345,7 +450,7 @@ def ongToTokenTransferInput(min_tokens, deadline, recipient, invoker, ong_amount
 
 def _ongToTokenOutput(tokens_bought, max_ong, deadline, buyer, recipient):
     # Check signature of buyer
-    CheckWitness(buyer)
+    assert (CheckWitness(buyer))
     # Legal check
     assert (deadline >= GetTime() and tokens_bought > 0 and max_ong > 0)
     # Obtain the token balance and native asset balance of contract
@@ -393,13 +498,13 @@ def ongToTokenTransferOutput(tokens_bought, deadline, recipient, invoker, ong_am
 
 def _tokenToOngInput(tokens_sold, min_ong, deadline, buyer, recipient):
     # Check the signature of buyer
-    CheckWitness(buyer)
+    assert (CheckWitness(buyer))
     assert (deadline >= GetTime() and tokens_sold > 0 and min_ong > 0)
     # Obtain the current token balance and native asset balance
     tokenHash = tokenAddress()
     self = GetExecutingScriptHash()
     tokenReserve = DynamicAppCall(tokenHash, BalanceOf_MethodName, [self])
-    ongReserve = Invoke(0, NATIVE_ASSET_ADDRESS, state(self))
+    ongReserve = Invoke(0, NATIVE_ASSET_ADDRESS, BalanceOf_MethodName, state(self))
     # Calculate how much native asset should be deducted from the pool if tokens_sold amount of token are added
     ongBought = _getInputPrice(tokens_sold, tokenReserve, ongReserve)
     # Ensure the ongBought is no less than the expected minimum native asset ong amount
@@ -563,9 +668,9 @@ def tokenToTokenTransferInput(tokens_sold, min_tokens_bought, min_ong_bought, de
 
 def _tokenToTokenOutput(tokens_bought, max_tokens_sold, max_ong_sold, deadline, buyer, recipient, exchange_addr):
     # Check signature of buyer
-    CheckWitness(buyer)
+    assert (CheckWitness(buyer))
     # Legal check
-    assert (deadline >= GetTime(), tokens_bought > 0 and max_ong_sold > 0)
+    assert (deadline >= GetTime() and tokens_bought > 0 and max_ong_sold > 0)
     self = GetExecutingScriptHash()
     assert (exchange_addr != self and exchange_addr != ZERO_ADDRESS and len(exchange_addr) == 20)
     # Calculate how much native asset should we provide to buy tokens_bought amount token in exchange_addr platform
@@ -862,7 +967,7 @@ def balanceOf(owner):
     return Get(GetContext(), concat(BALANCE_PREFIX, owner))
 
 
-def transfer(from_acct,to_acct,amount):
+def transfer(from_acct, to_acct, amount):
     """
     Transfer amount of tokens from from_acct to to_acct
     :param from_acct: the account from which the amount of tokens will be transferred
@@ -880,10 +985,10 @@ def transfer(from_acct,to_acct,amount):
     if amount == fromBalance:
         Delete(GetContext(),fromKey)
     else:
-        Put(GetContext(),fromKey,fromBalance - amount)
-    toKey = concat(BALANCE_PREFIX,to_acct)
-    toBalance = Get(GetContext(),toKey)
-    Put(GetContext(),toKey,toBalance + amount)
+        Put(GetContext(), fromKey, fromBalance - amount)
+    toKey = concat(BALANCE_PREFIX, to_acct)
+    toBalance = Get(GetContext(), toKey)
+    Put(GetContext(),toKey, toBalance + amount)
 
     # Fire event
     TransferEvent(from_acct, to_acct, amount)
@@ -901,7 +1006,7 @@ def transferMulti(args):
     return True
 
 
-def transferFrom(spender,from_acct,to_acct,amount):
+def transferFrom(spender, from_acct, to_acct, amount):
     """
     spender spends amount of tokens on the behalf of from_acct, spender makes a transaction of amount of tokens
     from from_acct to to_acct
@@ -941,7 +1046,7 @@ def transferFrom(spender,from_acct,to_acct,amount):
     return True
 
 
-def approve(owner,spender,amount):
+def approve(owner, spender, amount):
     """
     owner allow spender to spend amount of token from owner account
     Note here, the amount should be less than the balance of owner right now.
@@ -963,7 +1068,7 @@ def approve(owner,spender,amount):
     return True
 
 
-def allowance(owner,spender):
+def allowance(owner, spender):
     """
     check how many token the spender is allowed to spend from owner account
     :param owner: token owner
