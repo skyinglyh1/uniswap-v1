@@ -77,7 +77,7 @@ def createExchange(token):
 
     # Invoke the newly deployed contract to set up the token exchange pair
     exchangeHash = AddressFromVmCode(templateScript)
-    assert (DynamicAppCall(exchangeHash, "setup", [token]))
+    assert (DynamicAppCall(exchangeHash, "setup", [token, GetExecutingScriptHash()]))
 
     # Store the map between token and exchange contract hash
     Put(GetContext(), concat(TOKEN_TO_EXCHANGE_PREFIX, token), exchangeHash)
