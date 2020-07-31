@@ -30,6 +30,7 @@ TOKEN_KEY = "token"
 FACTORY_KEY = "factory"
 
 # Event format
+SetupEvent = RegisterAction("setup", "token_addr", "factory_addr")
 TokenPurchaseEvent = RegisterAction("tokenPurchase", "buyer", "ont_sold", "tokens_bought")
 OngPurchaseEvent = RegisterAction("ongPurchase", "buyer", "tokens_sold", "ont_bought")
 AddLiquidityEvent = RegisterAction("addLiquidity", "provider", "ont_amount", "token_amount")
@@ -276,8 +277,9 @@ def setup(token_addr, factory_addr):
     # Make sure the stored factory and token are empty and passed token_addr is not empty
     factory = Get(GetContext(), FACTORY_KEY)
     token = Get(GetContext(), TOKEN_KEY)
-    assert (len(factory) == 0 and len(token) == 0 and len(token_addr) > 0)
-
+    assert (len(factory) == 0 and len(token) == 0 and len(token_addr) == 20)
+    # Ensure being invoked by the contract with hash of factory_addr
+    assert (CheckWitness(factory_addr))
     # Ensure this method is not invoked by the normal account, yet by the smart contract
     callerHash = GetCallingScriptHash()
     entryHash = GetEntryScriptHash()
@@ -286,9 +288,10 @@ def setup(token_addr, factory_addr):
 
     # Store the token_addr
     Put(GetContext(), TOKEN_KEY, token_addr)
-    # Ensure being invoked by the contract with hash of factory_addr
-    assert (CheckWitness(factory_addr))
     Put(GetContext(), FACTORY_KEY, factory_addr)
+
+    # Fire event
+    SetupEvent(token_addr, factory_addr)
     return True
 
 

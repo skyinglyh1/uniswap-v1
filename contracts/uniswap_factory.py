@@ -26,6 +26,7 @@ TOKEN_TO_EXCHANGE_PREFIX = "tokenToEx"
 EXCHANGE_TO_TOKEN_PREFIX = "ExToToken"
 ID_TO_TOKEN_PREFIX = "IdToToken"
 
+IntitializeFactoryEvent = RegisterAction("InitializeFactory", "templateScript")
 NewExchangeEvent = RegisterAction("NewExchange", "token", "exchange")
 
 def Main(operation, args):
@@ -55,39 +56,40 @@ def Main(operation, args):
 def intitializeFactory(template):
     assert (len(Get(GetContext(), EXCHANGE_TEMPLATE_KEY)) == 0)
     Put(GetContext(), EXCHANGE_TEMPLATE_KEY, template)
+    IntitializeFactoryEvent(template)
     return True
 
 
 def createExchange(token):
-    # Ensure token is a contract with
+    # Ensure token is a contract with nonzero contract hash
     assert (token != ZERO_ADDRESS and len(token) == 20)
 
     # Ensure templateCode exist
-    template = Get(GetContext(), EXCHANGE_TEMPLATE_KEY)
-    templateScript = GetScript(template)
+    templateScript = Get(GetContext(), EXCHANGE_TEMPLATE_KEY)
     assert (len(templateScript) > 0)
     tokenCount = Get(GetContext(), TOKEN_COUNT_KEY)
 
     # append unused byte code to avm code to produce different contract
-    newTokenCound = tokenCount + 1
-    templateScript = concat(templateScript, newTokenCound)
+    newTokenCount = tokenCount + 1
+    templateScript = concat(templateScript, newTokenCount)
 
     # Deploy replica contract
-    assert (Create(templateScript, True, "uniswap_exchange", "1.0", "uniswap_factory", "", "uniswap_exchange contract created by uniswap_factory contract"))
+    assert (Create(templateScript, True, "uniswap_exchange", "1.0", "uniswap_factory", "email", "uniswap_exchange contract created by uniswap_factory contract"))
 
     # Invoke the newly deployed contract to set up the token exchange pair
-    exchangeHash = AddressFromVmCode(templateScript)
+    exchangeAddr = AddressFromVmCode(templateScript)
+    exchangeHash = bytearray_reverse(exchangeAddr)
     assert (DynamicAppCall(exchangeHash, "setup", [token, GetExecutingScriptHash()]))
 
     # Store the map between token and exchange contract hash
     Put(GetContext(), concat(TOKEN_TO_EXCHANGE_PREFIX, token), exchangeHash)
-    Put(GetContext(), concat(TOKEN_TO_EXCHANGE_PREFIX, exchangeHash), token)
+    Put(GetContext(), concat(EXCHANGE_TO_TOKEN_PREFIX, exchangeHash), token)
 
     # Add the token count
-    Put(GetContext(), TOKEN_COUNT_KEY, newTokenCound)
+    Put(GetContext(), TOKEN_COUNT_KEY, newTokenCount)
 
     # Map token with token id
-    Put(GetContext(), concat(ID_TO_TOKEN_PREFIX, newTokenCound), token)
+    Put(GetContext(), concat(ID_TO_TOKEN_PREFIX, newTokenCount), token)
 
     # Fire the event
     NewExchangeEvent(token, exchangeHash)
