@@ -60,7 +60,7 @@ def intitializeFactory(template):
 
 def createExchange(token):
     # Ensure token is a contract with
-    assert (token == ZERO_ADDRESS and len(token) == 20)
+    assert (token != ZERO_ADDRESS and len(token) == 20)
 
     # Ensure templateCode exist
     template = Get(GetContext(), EXCHANGE_TEMPLATE_KEY)
