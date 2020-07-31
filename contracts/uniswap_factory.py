@@ -56,7 +56,7 @@ def Main(operation, args):
 def intitializeFactory(template):
     assert (len(Get(GetContext(), EXCHANGE_TEMPLATE_KEY)) == 0)
     Put(GetContext(), EXCHANGE_TEMPLATE_KEY, template)
-    IntitializeFactoryEvent(template)
+    Notify(["intitializeFactory", template])
     return True
 
 
@@ -77,9 +77,9 @@ def createExchange(token):
     assert (Create(templateScript, True, "uniswap_exchange", "1.0", "uniswap_factory", "email", "uniswap_exchange contract created by uniswap_factory contract"))
 
     # Invoke the newly deployed contract to set up the token exchange pair
-    exchangeAddr = AddressFromVmCode(templateScript)
-    exchangeHash = bytearray_reverse(exchangeAddr)
-    assert (DynamicAppCall(exchangeHash, "setup", [token, GetExecutingScriptHash()]))
+    exchangeHash = AddressFromVmCode(templateScript)
+    exchangeAddr = bytearray_reverse(exchangeHash)
+    assert (DynamicAppCall(exchangeAddr, "setup", [token, GetExecutingScriptHash()]))
 
     # Store the map between token and exchange contract hash
     Put(GetContext(), concat(TOKEN_TO_EXCHANGE_PREFIX, token), exchangeHash)
