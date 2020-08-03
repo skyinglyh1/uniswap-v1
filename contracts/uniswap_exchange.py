@@ -386,7 +386,7 @@ def removeLiquidity(amount, min_ong, min_tokens, deadline, withdrawer):
     # TODO: check if this balance check is redundant
     oldBalance = balanceOf(withdrawer)
     newBalance = oldBalance - amount
-    assert (newBalance < newBalance)
+    assert (newBalance < oldBalance)
     Put(GetContext(), concat(BALANCE_PREFIX, withdrawer), newBalance)
     Put(GetContext(), TOTAL_SUPPLY_KEY, curSupply - amount)
 
