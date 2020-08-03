@@ -270,14 +270,14 @@ def Main(operation, args):
 def setup(token_addr, factory_addr):
     """
     This function is called once by the factory contract during contract creation.
-    :param token_addr: Indicate which token is supported by current exchange contract
-    :param factory_addr: Indicate contract hash which is invoking `setup` method
+    :param token_addr: Indicate which token is supported by current exchange contract, token_addr -> reversed token contract hash
+    :param factory_addr: Indicate contract address which is invoking `setup` method, factory_addr -> reversed factory contract hash
     :return:
     """
     # Make sure the stored factory and token are empty and passed token_addr is not empty
     factory = Get(GetContext(), FACTORY_KEY)
     token = Get(GetContext(), TOKEN_KEY)
-    assert (len(factory) == 0 and len(token) == 0 and len(token_addr) == 20)
+    assert (len(factory) == 0 and len(token) == 0 and len(token_addr) == 20 and len(factory_addr) == 20)
     # Ensure being invoked by the contract with hash of factory_addr
     assert (CheckWitness(factory_addr))
     # Ensure this method is not invoked by the normal account, yet by the smart contract
@@ -315,7 +315,7 @@ def addLiquidity(min_liquidity, max_tokens, deadline, depositer, deposit_ong_amt
     assert (Invoke(0, NATIVE_ASSET_ADDRESS, Transfer_MethodName, [state(depositer, self, deposit_ong_amt)]))
 
     curSupply= totalSupply()
-    tokenHash = tokenAddress()
+    tokenAddr = tokenAddress()
     tokenAmount = 0
     liquidityMinted = 0
     if curSupply > 0:
@@ -323,7 +323,7 @@ def addLiquidity(min_liquidity, max_tokens, deadline, depositer, deposit_ong_amt
         # Get native asset ong balance of current contract
         ongReserve = Invoke(0, NATIVE_ASSET_ADDRESS, BalanceOf_MethodName, state(self))
         # Get OEP4 asset balance of current contract
-        tokenReserve = DynamicAppCall(tokenHash, BalanceOf_MethodName, [self])
+        tokenReserve = DynamicAppCall(tokenAddr, BalanceOf_MethodName, [self])
         # Calculate the token increment correlated with deposit_ong_amt
         tokenAmount = deposit_ong_amt * tokenReserve / ongReserve + 1
         # Calculate how many token should be minted as shares for the provider
@@ -336,9 +336,9 @@ def addLiquidity(min_liquidity, max_tokens, deadline, depositer, deposit_ong_amt
     else:
         # Make sure the factory and token address are not empty, make sure initial depositing amount is greater than 0
         factory = factoryAddress()
-        assert (len(factory) > 0 and len(tokenHash) > 0 and deposit_ong_amt > 0)
+        assert (len(factory) > 0 and len(tokenAddr) > 0 and deposit_ong_amt > 0)
         # Obtain the exchange hash correlated with tokenHash and ensure it equals current contract hash
-        exchange = DynamicAppCall(factory, GetExchange_MethodName, [tokenHash])
+        exchange = DynamicAppCall(factory, GetExchange_MethodName, [bytearray_reverse(tokenAddr)])
         assert (exchange == self)
         # Update the depositer's share balance and the total supply
         tokenAmount = max_tokens
@@ -346,7 +346,7 @@ def addLiquidity(min_liquidity, max_tokens, deadline, depositer, deposit_ong_amt
         Put(GetContext(), concat(BALANCE_PREFIX, depositer), initialLiquidity)
         Put(GetContext(), TOTAL_SUPPLY_KEY, initialLiquidity)
     # Transfer token from depositer to current contract
-    assert (DynamicAppCall(tokenHash, TransferFrom_MethodName, [self, depositer, self, tokenAmount]))
+    assert (DynamicAppCall(tokenAddr, TransferFrom_MethodName, [self, depositer, self, tokenAmount]))
     # Fire event
     AddLiquidityEvent(depositer, deposit_ong_amt, tokenAmount)
     TransferEvent(ZERO_ADDRESS, depositer, liquidityMinted)
@@ -372,8 +372,8 @@ def removeLiquidity(amount, min_ong, min_tokens, deadline, withdrawer):
     assert (curSupply > 0)
     # Obtain token balance of current contract
     self = GetExecutingScriptHash()
-    tokenHash = tokenAddress()
-    tokenReserve = DynamicAppCall(tokenHash, BalanceOf_MethodName, [self])
+    tokenAddr = tokenAddress()
+    tokenReserve = DynamicAppCall(tokenAddr, BalanceOf_MethodName, [self])
     # Obtain native asset reserve balance of current contract
     ongReserve = Invoke(0, NATIVE_ASSET_ADDRESS, BalanceOf_MethodName, state(self))
     # Calculate how many OEP4 tokens should be withdrawn by the withdrawer

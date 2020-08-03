@@ -27,7 +27,7 @@ EXCHANGE_TO_TOKEN_PREFIX = "ExToToken"
 ID_TO_TOKEN_PREFIX = "IdToToken"
 
 IntitializeFactoryEvent = RegisterAction("InitializeFactory", "templateScript")
-NewExchangeEvent = RegisterAction("NewExchange", "token", "exchange")
+NewExchangeEvent = RegisterAction("NewExchange", "token_addr", "exchange_addr")
 
 def Main(operation, args):
     if operation == "intitializeFactory":
@@ -54,24 +54,26 @@ def Main(operation, args):
 
 
 def intitializeFactory(template):
-    assert (len(Get(GetContext(), EXCHANGE_TEMPLATE_KEY)) == 0)
+    # TODO: uncommit the next line when used in mainnet, there we do not use it for the convenience of testing
+    # assert (len(Get(GetContext(), EXCHANGE_TEMPLATE_KEY)) == 0)
     Put(GetContext(), EXCHANGE_TEMPLATE_KEY, template)
     Notify(["intitializeFactory", template])
     return True
 
 
-def createExchange(token):
+def createExchange(token_hash):
     # Ensure token is a contract with nonzero contract hash
-    assert (token != ZERO_ADDRESS and len(token) == 20)
+    assert (token_hash != ZERO_ADDRESS and len(token_hash) == 20)
 
-    # Ensure templateCode exist
+    # Ensure templateCode existgetExchange
     templateScript = Get(GetContext(), EXCHANGE_TEMPLATE_KEY)
     assert (len(templateScript) > 0)
     tokenCount = Get(GetContext(), TOKEN_COUNT_KEY)
 
-    # append unused byte code to avm code to produce different contract
+    # # append unused byte code to avm code to produce different contract
     newTokenCount = tokenCount + 1
-    templateScript = concat(templateScript, newTokenCount)
+    # TODO: uncommit the next line when used in mainnet, there we do not use it for the convenience of testing
+    # templateScript = concat(templateScript, newTokenCount)
 
     # Deploy replica contract
     assert (Create(templateScript, True, "uniswap_exchange", "1.0", "uniswap_factory", "email", "uniswap_exchange contract created by uniswap_factory contract"))
@@ -79,29 +81,30 @@ def createExchange(token):
     # Invoke the newly deployed contract to set up the token exchange pair
     exchangeHash = AddressFromVmCode(templateScript)
     exchangeAddr = bytearray_reverse(exchangeHash)
-    assert (DynamicAppCall(exchangeAddr, "setup", [token, GetExecutingScriptHash()]))
+    tokenAddr = bytearray_reverse(token_hash)
+    assert (DynamicAppCall(exchangeAddr, "setup", [tokenAddr, GetExecutingScriptHash()]))
 
     # Store the map between token and exchange contract hash
-    Put(GetContext(), concat(TOKEN_TO_EXCHANGE_PREFIX, token), exchangeHash)
-    Put(GetContext(), concat(EXCHANGE_TO_TOKEN_PREFIX, exchangeHash), token)
+    Put(GetContext(), concat(TOKEN_TO_EXCHANGE_PREFIX, token_hash), exchangeAddr)
+    Put(GetContext(), concat(EXCHANGE_TO_TOKEN_PREFIX, exchangeHash), tokenAddr)
 
     # Add the token count
     Put(GetContext(), TOKEN_COUNT_KEY, newTokenCount)
 
     # Map token with token id
-    Put(GetContext(), concat(ID_TO_TOKEN_PREFIX, newTokenCount), token)
+    Put(GetContext(), concat(ID_TO_TOKEN_PREFIX, newTokenCount), tokenAddr)
 
     # Fire the event
-    NewExchangeEvent(token, exchangeHash)
+    NewExchangeEvent(tokenAddr, exchangeAddr)
     return True
 
 
-def getExchange(token):
-    return Get(GetContext(), concat(TOKEN_TO_EXCHANGE_PREFIX, token))
+def getExchange(token_hash):
+    return Get(GetContext(), concat(TOKEN_TO_EXCHANGE_PREFIX, token_hash))
 
 
-def getToken(exchange):
-    return Get(GetContext(), concat(EXCHANGE_TO_TOKEN_PREFIX, exchange))
+def getToken(exchange_hash):
+    return Get(GetContext(), concat(EXCHANGE_TO_TOKEN_PREFIX, exchange_hash))
 
 def getTokenWithId(token_id):
     return Get(GetContext(), concat(ID_TO_TOKEN_PREFIX, token_id))
