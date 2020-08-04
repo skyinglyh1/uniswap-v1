@@ -413,6 +413,8 @@ def _ongToTokenInput(ong_sold, min_tokens, deadline, buyer, recipient):
     tokenBought = _getInputPrice(ong_sold, ongReserve, tokenReserve)
     # Ensure the calculated amount of token bought is no less than min_tokens required
     assert (tokenBought >= min_tokens)
+    # Transfer ong_sold amount of ong from buyer to self contract address
+    assert (Invoke(0, NATIVE_ASSET_ADDRESS, Transfer_MethodName, [state(buyer, self, ong_sold)]))
     # Transfer tokenBought amount of tokens directly from this exchange to recipient
     assert (DynamicAppCall(tokenHash, Transfer_MethodName, [self, recipient, tokenBought]))
     # Fire event
