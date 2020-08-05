@@ -31,7 +31,7 @@ FACTORY_KEY = "factory"
 
 # Event format
 SetupEvent = RegisterAction("setup", "token_addr", "factory_addr")
-TokenPurchaseEvent = RegisterAction("tokenPurchase", "buyer", "ont_sold", "tokens_bought")
+TokenPurchaseEvent = RegisterAction("tokenPurchase", "buyer", "ont_sold", "tokens_bou ght")
 OngPurchaseEvent = RegisterAction("ongPurchase", "buyer", "tokens_sold", "ont_bought")
 AddLiquidityEvent = RegisterAction("addLiquidity", "provider", "ont_amount", "token_amount")
 RemoveLiquidityEvent = RegisterAction("removeLiquidity", "provider", "ont_amount", "token_amount")
@@ -106,14 +106,14 @@ def Main(operation, args):
         deadline = args[2]
         tokens_seller = args[3]
         return tokenToOngSwapInput(tokens_sold, min_ong, deadline, tokens_seller)
-    if operation == "tokenToOngSwapTransferInput":
+    if operation == "tokenToOngTransferInput":
         assert (len(args) == 5)
         tokens_sold = args[0]
         min_ong = args[1]
         deadline = args[2]
         tokens_seller = args[3]
         recipient = args[4]
-        return tokenToOngSwapTransferInput(tokens_sold, min_ong, deadline, tokens_seller, recipient)
+        return tokenToOngTransferInput(tokens_sold, min_ong, deadline, tokens_seller, recipient)
     if operation == "tokenToOngSwapOutput":
         assert (len(args) == 4)
         ong_bought = args[0]
@@ -493,7 +493,7 @@ def ongToTokenTransferOutput(tokens_bought, deadline, recipient, invoker, ong_am
 
     :param tokens_bought: Exact amount of tokens bought
     :param deadline: Time after which this tx can no longer be executed
-    :param recipient: Aaddress that receives output Tokens.
+    :param recipient: Address that receives output Tokens.
     :param invoker: User expecting to exchange with ong for tokens
     :param ong_amount: Amount of Maximum ong invoker provides for acquiring tokens_bought tokens
     :return: Amount of ong sold for obtaining tokens_bought amount of tokens
@@ -517,7 +517,7 @@ def _tokenToOngInput(tokens_sold, min_ong, deadline, buyer, recipient):
     # Transfer directly tokens_sold amount of token from buyer account to current contract
     assert (DynamicAppCall(tokenHash, TransferFrom_MethodName, [self, buyer, self, tokens_sold]))
     # Transfer native asset directly to the recipient
-    assert (Invoke(0, NATIVE_ASSET_ADDRESS, Transfer_MethodName, state(self, recipient, ongBought)))
+    assert (Invoke(0, NATIVE_ASSET_ADDRESS, Transfer_MethodName, [state(self, recipient, ongBought)]))
     # Fire event
     OngPurchaseEvent(buyer, tokens_sold, ongBought)
     return ongBought
@@ -537,7 +537,7 @@ def tokenToOngSwapInput(tokens_sold, min_ong, deadline, tokens_seller):
     """
     return _tokenToOngInput(tokens_sold, min_ong, deadline, tokens_seller, tokens_seller)
 
-def tokenToOngSwapTransferInput(tokens_sold, min_ong, deadline, tokens_seller, recipient):
+def tokenToOngTransferInput(tokens_sold, min_ong, deadline, tokens_seller, recipient):
     """
     Convert tokens_sold amount of tokens to Ong and transfer ong to recipient with conditions:
     1. the converted ong should be no less than min_ong
