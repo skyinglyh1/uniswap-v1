@@ -72,8 +72,7 @@ def createExchange(token_hash):
 
     # # append unused byte code to avm code to produce different contract
     newTokenCount = tokenCount + 1
-    # TODO: uncommit the next line when used in mainnet, there we do not use it for the convenience of testing
-    # templateScript = concat(templateScript, newTokenCount)
+    templateScript = concat(templateScript, newTokenCount)
 
     # Deploy replica contract
     assert (Create(templateScript, True, "uniswap_exchange", "1.0", "uniswap_factory", "email", "uniswap_exchange contract created by uniswap_factory contract"))
