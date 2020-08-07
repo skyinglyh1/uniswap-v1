@@ -155,9 +155,9 @@ def Main(operation, args):
         max_tokens_sold = args[1]
         max_ontd_sold = args[2]
         deadline = args[3]
-        token_addr = args[4]
+        token_hash = args[4]
         invoker = args[5]
-        return tokenToTokenSwapOutput(tokens_bought, max_tokens_sold, max_ontd_sold, deadline, token_addr, invoker)
+        return tokenToTokenSwapOutput(tokens_bought, max_tokens_sold, max_ontd_sold, deadline, token_hash, invoker)
     if operation == "tokenToTokenTransferOutput":
         assert (len(args) == 7)
         tokens_bought = args[0]
@@ -165,18 +165,18 @@ def Main(operation, args):
         max_ontd_sold = args[2]
         deadline = args[3]
         recipient = args[4]
-        token_addr = args[5]
+        token_hash = args[5]
         invoker = args[6]
-        return tokenToTokenTransferOutput(tokens_bought, max_tokens_sold, max_ontd_sold, deadline, recipient, token_addr, invoker)
+        return tokenToTokenTransferOutput(tokens_bought, max_tokens_sold, max_ontd_sold, deadline, recipient, token_hash, invoker)
     if operation == "tokenToExchangeSwapInput":
         assert (len(args) == 6)
         tokens_sold = args[0]
         min_tokens_bought = args[1]
         min_ontd_bought = args[2]
         deadline = args[3]
-        exchange_addr = args[4]
+        exchange_hash = args[4]
         invoker = args[5]
-        return tokenToExchangeSwapInput(tokens_sold, min_tokens_bought, min_ontd_bought, deadline, exchange_addr, invoker)
+        return tokenToExchangeSwapInput(tokens_sold, min_tokens_bought, min_ontd_bought, deadline, exchange_hash, invoker)
     if operation == "tokenToExchangeTransferInput":
         assert (len(args) == 7)
         tokens_sold = args[0]
@@ -184,18 +184,18 @@ def Main(operation, args):
         min_ontd_bought = args[2]
         deadline = args[3]
         recipient = args[4]
-        exchange_addr = args[5]
+        exchange_hash = args[5]
         invoker = args[6]
-        return tokenToExchangeTransferInput(tokens_sold, min_tokens_bought, min_ontd_bought, deadline, recipient, exchange_addr, invoker)
+        return tokenToExchangeTransferInput(tokens_sold, min_tokens_bought, min_ontd_bought, deadline, recipient, exchange_hash, invoker)
     if operation == "tokenToExchangeSwapOutput":
         assert (len(args) == 6)
         tokens_bought = args[0]
         max_tokens_sold = args[1]
         max_ontd_sold = args[2]
         deadline = args[3]
-        exchange_addr = args[4]
+        exchange_hash = args[4]
         invoker = args[5]
-        return tokenToExchangeSwapOutput(tokens_bought, max_tokens_sold, max_ontd_sold, deadline, exchange_addr, invoker)
+        return tokenToExchangeSwapOutput(tokens_bought, max_tokens_sold, max_ontd_sold, deadline, exchange_hash, invoker)
     if operation == "tokenToExchangeTransferOutput":
         assert (len(args) == 7)
         tokens_bought = args[0]
@@ -203,9 +203,9 @@ def Main(operation, args):
         max_ontd_sold = args[2]
         deadline = args[3]
         recipient = args[4]
-        exchange_addr = args[5]
+        exchange_hash = args[5]
         invoker = args[6]
-        return tokenToExchangeTransferOutput(tokens_bought, max_tokens_sold, max_ontd_sold, deadline, recipient, exchange_addr, invoker)
+        return tokenToExchangeTransferOutput(tokens_bought, max_tokens_sold, max_ontd_sold, deadline, recipient, exchange_hash, invoker)
     if operation == "getOntToTokenInputPrice":
         assert (len(args) == 1)
         ontd_sold = args[0]
@@ -710,7 +710,7 @@ def _tokenToTokenOutput(tokens_bought, max_tokens_sold, max_ont_sold, deadline, 
     return tokensSold
 
 
-def tokenToTokenSwapOutput(tokens_bought, max_tokens_sold, max_ontd_sold, deadline, token_addr, invoker):
+def tokenToTokenSwapOutput(tokens_bought, max_tokens_sold, max_ontd_sold, deadline, token_hash, invoker):
     """
     Convert some token1 within current exchange to tokens_bought amount of another token2 of token_addr and transfer token_addr to invoker with conditions:
     1. tokens_bought amount of token2 should be bought
@@ -724,14 +724,14 @@ def tokenToTokenSwapOutput(tokens_bought, max_tokens_sold, max_ontd_sold, deadli
     :param max_tokens_sold: Maximum tokens (within current exchange) sold
     :param max_ontd_sold: Maximum Ont purchased as intermediary
     :param deadline: Time after which this tx can no longer be executed
-    :param token_addr: Address of token being purchased
+    :param token_hash: Contract hash of token being purchased
     :param invoker: Account address expecting to convert his tokens to token_addr
     :return: Amount of tokens (within current exchange) sold
     """
-    exchangeAddr = DynamicAppCall(factoryAddress(), GetExchange_MethodName, [token_addr])
+    exchangeAddr = DynamicAppCall(factoryAddress(), GetExchange_MethodName, [token_hash])
     return _tokenToTokenOutput(tokens_bought, max_tokens_sold, max_ontd_sold, deadline, invoker, invoker, exchangeAddr)
 
-def tokenToTokenTransferOutput(tokens_bought, max_tokens_sold, max_ontd_sold, deadline, recipient, token_addr, invoker):
+def tokenToTokenTransferOutput(tokens_bought, max_tokens_sold, max_ontd_sold, deadline, recipient, token_hash, invoker):
     """
     Convert some token1 within current exchange to tokens_bought amount of another token2 of token_addr and transfer token_addr to recipient with conditions:
     1. tokens_bought amount of token2 should be bought
@@ -746,15 +746,15 @@ def tokenToTokenTransferOutput(tokens_bought, max_tokens_sold, max_ontd_sold, de
     :param max_ontd_sold: Maximum Ont purchased as intermediary
     :param deadline: Time after which this tx can no longer be executed
     :param recipient: Address that receives output token_addr
-    :param token_addr: Address of token being purchased
+    :param token_hash: Contract hash of token being purchased
     :param invoker: Account address expecting to convert his tokens to token_addr
     :return: Amount of tokens (within current exchange) sold
     """
-    exchangeAddr = DynamicAppCall(factoryAddress(), GetExchange_MethodName, [token_addr])
+    exchangeAddr = DynamicAppCall(factoryAddress(), GetExchange_MethodName, [token_hash])
     return _tokenToTokenOutput(tokens_bought, max_tokens_sold, max_ontd_sold, deadline, invoker, recipient, exchangeAddr)
 
 
-def tokenToExchangeSwapInput(tokens_sold, min_tokens_bought, min_ontd_bought, deadline, exchange_addr, invoker):
+def tokenToExchangeSwapInput(tokens_sold, min_tokens_bought, min_ontd_bought, deadline, exchange_hash, invoker):
     """
     Convert token1 within current exchange to another token2 supported within exchange_addr and transfer token2 to invoker with conditions:
     1. tokens_sold amount of token1 will be sold out
@@ -768,13 +768,13 @@ def tokenToExchangeSwapInput(tokens_sold, min_tokens_bought, min_ontd_bought, de
     :param min_tokens_bought: Minimum tokens of token_addr purchased
     :param min_ontd_bought: Minimum ont purchased as intermediary
     :param deadline: Time after which this tx can no longer be executed
-    :param exchange_addr: Address of exchange for the token being purchased
+    :param exchange_hash: Contract hash of exchange for the token being purchased
     :param invoker: Account address expecting to convert his tokens to exchange_addr.token
     :return: Amount of tokens (exchange_addr.token) bought
     """
-    return _tokenToTokenInput(tokens_sold, min_tokens_bought, min_ontd_bought, deadline, invoker, invoker, exchange_addr)
+    return _tokenToTokenInput(tokens_sold, min_tokens_bought, min_ontd_bought, deadline, invoker, invoker, bytearray_reverse(exchange_hash))
 
-def tokenToExchangeTransferInput(tokens_sold, min_tokens_bought, min_ontd_bought, deadline, recipient, exchange_addr, invoker):
+def tokenToExchangeTransferInput(tokens_sold, min_tokens_bought, min_ontd_bought, deadline, recipient, exchange_hash, invoker):
     """
     Convert token1 within current exchange to another token2 supported within exchange_addr and transfer token2 to recipient with conditions:
     1. tokens_sold amount of token1 will be sold out
@@ -789,15 +789,15 @@ def tokenToExchangeTransferInput(tokens_sold, min_tokens_bought, min_ontd_bought
     :param min_ont_bought: Minimum ont purchased as intermediary
     :param deadline: Time after which this tx can no longer be executed
     :param recipient: Address that receive output token_addr
-    :param exchange_addr: Address of exchange for the token being purchased
+    :param exchange_hash: Contract hash of exchange for the token being purchased
     :param invoker: Account address expecting to convert his tokens to exchange_addr.token
     :return: Amount of tokens (exchange_addr.token) bought
     """
     assert (recipient != GetExecutingScriptHash())
-    return _tokenToTokenInput(tokens_sold, min_tokens_bought, min_ontd_bought, deadline, invoker, recipient, exchange_addr)
+    return _tokenToTokenInput(tokens_sold, min_tokens_bought, min_ontd_bought, deadline, invoker, recipient, bytearray_reverse(exchange_hash))
 
 
-def tokenToExchangeSwapOutput(tokens_bought, max_tokens_sold, max_ontd_sold, deadline, exchange_addr, invoker):
+def tokenToExchangeSwapOutput(tokens_bought, max_tokens_sold, max_ontd_sold, deadline, exchange_hash, invoker):
     """
     Convert some token1 within current exchange to tokens_bought of another token2 supported within exchange_addr
     and transfer tokens_bought amount of token2 to invoker with conditions:
@@ -812,13 +812,13 @@ def tokenToExchangeSwapOutput(tokens_bought, max_tokens_sold, max_ontd_sold, dea
     :param max_tokens_sold: Maximum tokens (self.token) sold
     :param max_ont_sold: Maximum ont purchased as intermediary
     :param deadline: Time after which this tx can no longer be executed
-    :param exchange_addr: Address of exchange for the token being purchased
+    :param exchange_hash: Contract hash of exchange for the token being purchased
     :param invoker: Account address expecting to convert his tokens to exchange_addr.token
     :return: Amount of tokens (self.token) sold
     """
-    return _tokenToTokenOutput(tokens_bought, max_tokens_sold, max_ontd_sold, deadline, invoker, invoker, exchange_addr)
+    return _tokenToTokenOutput(tokens_bought, max_tokens_sold, max_ontd_sold, deadline, invoker, invoker, bytearray_reverse(exchange_hash))
 
-def tokenToExchangeTransferOutput(tokens_bought, max_tokens_sold, max_ontd_sold, deadline, recipient, exchange_addr, invoker):
+def tokenToExchangeTransferOutput(tokens_bought, max_tokens_sold, max_ontd_sold, deadline, recipient, exchange_hash, invoker):
     """
     Convert some token1 within current exchange to tokens_bought of another token2 supported within exchange_addr
     and transfer tokens_bought amount of token2 to invoker with conditions:
@@ -834,12 +834,12 @@ def tokenToExchangeTransferOutput(tokens_bought, max_tokens_sold, max_ontd_sold,
     :param max_ont_sold: Maximum ont purchased as intermediary
     :param deadline: Time after which this tx can no longer be executed
     :param recipient: The address receives tokens_bought amount of exchange_addr.token
-    :param exchange_addr: Address of exchange for the token being purchased
+    :param exchange_hash: Address of exchange for the token being purchased
     :param invoker: Account address expecting to convert his tokens to exchange_addr.token
     :return: Amount of tokens (self.token) sold
     """
     assert (recipient != GetExecutingScriptHash())
-    return _tokenToTokenOutput(tokens_bought, max_tokens_sold, max_ontd_sold, deadline, invoker, recipient, exchange_addr)
+    return _tokenToTokenOutput(tokens_bought, max_tokens_sold, max_ontd_sold, deadline, invoker, recipient, bytearray_reverse(exchange_hash))
 
 
 def getOntToTokenInputPrice(ontd_sold):
