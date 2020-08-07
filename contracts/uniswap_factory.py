@@ -50,7 +50,7 @@ def Main(operation, args):
         assert (len(args) == 1)
         token_id = args[0]
         return getTokenWithId(token_id)
-    return False
+    assert (False)
 
 
 def intitializeFactory(template):

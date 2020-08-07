@@ -15,10 +15,9 @@ from ontology.libont import bytearray_reverse, AddressFromVmCode
 from ontology.interop.System.App import RegisterAppCall, DynamicAppCall
 
 ZERO_ADDRESS = bytearray(b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00')
-ONT_ADDRESS = bytearray(b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01')
-ONG_ADDRESS = bytearray(b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02')
 
-NATIVE_ASSET_ADDRESS = ONG_ADDRESS
+# TODO: change this contract hash when on mainnet
+ONTD_ADDRESS = hexstring2address('2e0de81023ea6d32460244f29c57c84ce569e7b7')
 
 NAME = "Uniswap V1"
 SYMBOL= "UNI-V1"
@@ -33,7 +32,7 @@ FACTORY_KEY = "factory"
 # Event format
 SetupEvent = RegisterAction("setup", "token_addr", "factory_addr")
 TokenPurchaseEvent = RegisterAction("tokenPurchase", "buyer", "ont_sold", "tokens_bought")
-OntPurchaseEvent = RegisterAction("ongPurchase", "buyer", "tokens_sold", "ont_bought")
+OntPurchaseEvent = RegisterAction("ontPurchase", "buyer", "tokens_sold", "ont_bought")
 AddLiquidityEvent = RegisterAction("addLiquidity", "provider", "ont_amount", "token_amount")
 RemoveLiquidityEvent = RegisterAction("removeLiquidity", "provider", "ont_amount", "token_amount")
 TransferEvent = RegisterAction("transfer", "from", "to", "amount")
@@ -60,156 +59,156 @@ def Main(operation, args):
         max_tokens = args[1]
         deadline = args[2]
         depositer = args[3]
-        deposit_ont_amt = args[4]
-        return addLiquidity(min_liquidity, max_tokens, deadline, depositer, deposit_ont_amt)
+        deposit_ontd_amt = args[4]
+        return addLiquidity(min_liquidity, max_tokens, deadline, depositer, deposit_ontd_amt)
     if operation == "removeLiquidity":
         assert (len(args) == 5)
         amount = args[0]
-        min_ont = args[1]
+        min_ontd = args[1]
         min_tokens = args[2]
         deadline = args[3]
         withdrawer = args[4]
-        return removeLiquidity(amount, min_ont, min_tokens, deadline, withdrawer)
+        return removeLiquidity(amount, min_ontd, min_tokens, deadline, withdrawer)
     if operation == "ontToTokenSwapInput":
         assert (len(args) == 4)
         min_tokens = args[0]
         deadline = args[1]
         invoker = args[2]
-        ont_amount = args[3]
-        return ontToTokenSwapInput(min_tokens, deadline, invoker, ont_amount)
+        ontd_amount = args[3]
+        return ontToTokenSwapInput(min_tokens, deadline, invoker, ontd_amount)
     if operation == "ontToTokenTransferInput":
         assert (len(args) == 5)
         min_tokens = args[0]
         deadline = args[1]
         recipient = args[2]
         invoker = args[3]
-        ont_amount = args[4]
-        return ontToTokenTransferInput(min_tokens, deadline, recipient, invoker, ont_amount)
+        ontd_amount = args[4]
+        return ontToTokenTransferInput(min_tokens, deadline, recipient, invoker, ontd_amount)
     if operation == "ontToTokenSwapOutput":
         assert (len(args) == 4)
         tokens_bought = args[0]
         deadline = args[1]
         invoker = args[2]
-        ont_amount = args[3]
-        return ontToTokenSwapOutput(tokens_bought, deadline, invoker, ont_amount)
+        ontd_amount = args[3]
+        return ontToTokenSwapOutput(tokens_bought, deadline, invoker, ontd_amount)
     if operation == "ontToTokenTransferOutput":
         assert (len(args) == 5)
         tokens_bought = args[0]
         deadline = args[1]
         recipient = args[2]
         invoker = args[3]
-        ont_amount = args[4]
-        return ontToTokenTransferOutput(tokens_bought, deadline, recipient, invoker, ont_amount)
+        ontd_amount = args[4]
+        return ontToTokenTransferOutput(tokens_bought, deadline, recipient, invoker, ontd_amount)
     if operation == "tokenToOntSwapInput":
         assert (len(args) == 4)
         tokens_sold = args[0]
-        min_ont = args[1]
+        min_ontd = args[1]
         deadline = args[2]
         tokens_seller = args[3]
-        return tokenToOntSwapInput(tokens_sold, min_ont, deadline, tokens_seller)
+        return tokenToOntSwapInput(tokens_sold, min_ontd, deadline, tokens_seller)
     if operation == "tokenToOntTransferInput":
         assert (len(args) == 5)
         tokens_sold = args[0]
-        min_ont = args[1]
+        min_ontd = args[1]
         deadline = args[2]
         tokens_seller = args[3]
         recipient = args[4]
-        return tokenToOntTransferInput(tokens_sold, min_ont, deadline, tokens_seller, recipient)
+        return tokenToOntTransferInput(tokens_sold, min_ontd, deadline, tokens_seller, recipient)
     if operation == "tokenToOntSwapOutput":
         assert (len(args) == 4)
-        ont_bought = args[0]
+        ontd_bought = args[0]
         max_tokens = args[1]
         deadline = args[2]
         invoker = args[3]
-        return tokenToOntSwapOutput(ont_bought, max_tokens, deadline, invoker)
+        return tokenToOntSwapOutput(ontd_bought, max_tokens, deadline, invoker)
     if operation == "tokenToOntTransferOutput":
         assert (len(args) == 5)
-        ont_bought = args[0]
+        ontd_bought = args[0]
         max_tokens = args[1]
         deadline = args[2]
         recipient = args[3]
         invoker = args[4]
-        return tokenToOntTransferOutput(ont_bought, max_tokens, deadline, recipient, invoker)
+        return tokenToOntTransferOutput(ontd_bought, max_tokens, deadline, recipient, invoker)
     if operation == "tokenToTokenSwapInput":
         assert (len(args) == 6)
         tokens_sold = args[0]
         min_tokens_bought = args[1]
-        min_ont_bought = args[2]
+        min_ontd_bought = args[2]
         deadline = args[3]
         token_addr = args[4]
         invoker = args[5]
-        return tokenToTokenSwapInput(tokens_sold, min_tokens_bought, min_ont_bought, deadline, token_addr, invoker)
+        return tokenToTokenSwapInput(tokens_sold, min_tokens_bought, min_ontd_bought, deadline, token_addr, invoker)
     if operation == "tokenToTokenTransferInput":
         assert (len(args) == 7)
         tokens_sold = args[0]
         min_tokens_bought = args[1]
-        min_ont_bought = args[2]
+        min_ontd_bought = args[2]
         deadline = args[3]
         recipient = args[4]
         token_addr = args[5]
         invoker = args[6]
-        return tokenToTokenTransferInput(tokens_sold, min_tokens_bought, min_ont_bought, deadline, recipient, token_addr, invoker)
+        return tokenToTokenTransferInput(tokens_sold, min_tokens_bought, min_ontd_bought, deadline, recipient, token_addr, invoker)
     if operation == "tokenToTokenSwapOutput":
         assert (len(args) == 6)
         tokens_bought = args[0]
         max_tokens_sold = args[1]
-        max_ont_sold = args[2]
+        max_ontd_sold = args[2]
         deadline = args[3]
         token_addr = args[4]
         invoker = args[5]
-        return tokenToTokenSwapOutput(tokens_bought, max_tokens_sold, max_ont_sold, deadline, token_addr, invoker)
+        return tokenToTokenSwapOutput(tokens_bought, max_tokens_sold, max_ontd_sold, deadline, token_addr, invoker)
     if operation == "tokenToTokenTransferOutput":
         assert (len(args) == 7)
         tokens_bought = args[0]
         max_tokens_sold = args[1]
-        max_ont_sold = args[2]
+        max_ontd_sold = args[2]
         deadline = args[3]
         recipient = args[4]
         token_addr = args[5]
         invoker = args[6]
-        return tokenToTokenTransferOutput(tokens_bought, max_tokens_sold, max_ont_sold, deadline, recipient, token_addr, invoker)
+        return tokenToTokenTransferOutput(tokens_bought, max_tokens_sold, max_ontd_sold, deadline, recipient, token_addr, invoker)
     if operation == "tokenToExchangeSwapInput":
         assert (len(args) == 6)
         tokens_sold = args[0]
         min_tokens_bought = args[1]
-        min_ont_bought = args[2]
+        min_ontd_bought = args[2]
         deadline = args[3]
         exchange_addr = args[4]
         invoker = args[5]
-        return tokenToExchangeSwapInput(tokens_sold, min_tokens_bought, min_ont_bought, deadline, exchange_addr, invoker)
+        return tokenToExchangeSwapInput(tokens_sold, min_tokens_bought, min_ontd_bought, deadline, exchange_addr, invoker)
     if operation == "tokenToExchangeTransferInput":
         assert (len(args) == 7)
         tokens_sold = args[0]
         min_tokens_bought = args[1]
-        min_ont_bought = args[2]
+        min_ontd_bought = args[2]
         deadline = args[3]
         recipient = args[4]
         exchange_addr = args[5]
         invoker = args[6]
-        return tokenToExchangeTransferInput(tokens_sold, min_tokens_bought, min_ont_bought, deadline, recipient, exchange_addr, invoker)
+        return tokenToExchangeTransferInput(tokens_sold, min_tokens_bought, min_ontd_bought, deadline, recipient, exchange_addr, invoker)
     if operation == "tokenToExchangeSwapOutput":
         assert (len(args) == 6)
         tokens_bought = args[0]
         max_tokens_sold = args[1]
-        max_ont_sold = args[2]
+        max_ontd_sold = args[2]
         deadline = args[3]
         exchange_addr = args[4]
         invoker = args[5]
-        return tokenToExchangeSwapOutput(tokens_bought, max_tokens_sold, max_ont_sold, deadline, exchange_addr, invoker)
+        return tokenToExchangeSwapOutput(tokens_bought, max_tokens_sold, max_ontd_sold, deadline, exchange_addr, invoker)
     if operation == "tokenToExchangeTransferOutput":
         assert (len(args) == 7)
         tokens_bought = args[0]
         max_tokens_sold = args[1]
-        max_ont_sold = args[2]
+        max_ontd_sold = args[2]
         deadline = args[3]
         recipient = args[4]
         exchange_addr = args[5]
         invoker = args[6]
-        return tokenToExchangeTransferOutput(tokens_bought, max_tokens_sold, max_ont_sold, deadline, recipient, exchange_addr, invoker)
+        return tokenToExchangeTransferOutput(tokens_bought, max_tokens_sold, max_ontd_sold, deadline, recipient, exchange_addr, invoker)
     if operation == "getOntToTokenInputPrice":
         assert (len(args) == 1)
-        ont_sold = args[0]
-        return getOntToTokenInputPrice(ont_sold)
+        ontd_sold = args[0]
+        return getOntToTokenInputPrice(ontd_sold)
     if operation == "getOntToTokenOutputPrice":
         assert (len(args) == 1)
         tokens_bought = args[0]
@@ -220,8 +219,8 @@ def Main(operation, args):
         return getTokenToOntInputPrice(tokens_sold)
     if operation == "getTokenToOntOutputPrice":
         assert (len(args) == 1)
-        ont_bought = args[0]
-        return getTokenToOntOutputPrice(ont_bought)
+        ontd_bought = args[0]
+        return getTokenToOntOutputPrice(ontd_bought)
     if operation == "tokenAddress":
         return tokenAddress()
     if operation == "factoryAddress":
@@ -265,7 +264,7 @@ def Main(operation, args):
         owner = args[0]
         spender = args[1]
         return allowance(owner, spender)
-    return False
+    assert (False)
 
 
 def setup(token_addr, factory_addr):
@@ -296,7 +295,7 @@ def setup(token_addr, factory_addr):
     return True
 
 
-def addLiquidity(min_liquidity, max_tokens, deadline, depositer, deposit_ont_amt):
+def addLiquidity(min_liquidity, max_tokens, deadline, depositer, deposit_ontd_amt):
     """
     Deposit ONG and Tokens at current ratio to mint UNI tokens
 
@@ -304,31 +303,30 @@ def addLiquidity(min_liquidity, max_tokens, deadline, depositer, deposit_ont_amt
     :param max_tokens: Maximum number of tokens deposited. Deposits max amount if total UNI supply is 0
     :param deadline: Time after which this transaction can no longer be executed.
     :param depositer: Account address depositing Ont and tokens into contract to add liquidity
-    :param deposit_ont_amt: Amount of ont that will be deposited
+    :param deposit_ontd_amt: Amount of ont that will be deposited
     :return: The amount of UNI minted
     """
     # Ensure the validity of parameters
-    assert (deposit_ont_amt > 0 and deadline > GetTime() and max_tokens > 0)
+    assert (deposit_ontd_amt > 0 and deadline > GetTime() and max_tokens > 0)
     # Check depositer's signature
     assert (CheckWitness(depositer))
     self = GetExecutingScriptHash()
-    # Transfer deposit_amt amount of native asset into this contract
-    assert (Invoke(0, NATIVE_ASSET_ADDRESS, Transfer_MethodName, [state(depositer, self, deposit_ont_amt)]))
-
+    # Transfer deposit_amt amount of ontd into this contract
+    assert (DynamicAppCall(ONTD_ADDRESS, Transfer_MethodName, [depositer, self, deposit_ontd_amt]))
     curSupply= totalSupply()
     tokenAddr = tokenAddress()
     tokenAmount = 0
     liquidityMinted = 0
     if curSupply > 0:
         assert (min_liquidity > 0)
-        # Get native asset ont balance of current contract
-        ontReserve = Invoke(0, NATIVE_ASSET_ADDRESS, BalanceOf_MethodName, state(self))
+        # Get ontd balance of current contract
+        ontdReserve = DynamicAppCall(ONTD_ADDRESS, BalanceOf_MethodName, [self])
         # Get OEP4 asset balance of current contract
         tokenReserve = DynamicAppCall(tokenAddr, BalanceOf_MethodName, [self])
         # Calculate the token increment correlated with deposit_ont_amt
-        tokenAmount = deposit_ont_amt * tokenReserve / ontReserve + 1
+        tokenAmount = deposit_ontd_amt * tokenReserve / ontdReserve + 1
         # Calculate how many token should be minted as shares for the provider
-        liquidityMinted = deposit_ont_amt * curSupply / ontReserve
+        liquidityMinted = deposit_ontd_amt * curSupply / ontdReserve
         # Check if conditions are met
         assert (max_tokens >= tokenAmount and liquidityMinted >= min_liquidity)
         # Update the depositer's share balance and the total supply (or share)
@@ -337,37 +335,37 @@ def addLiquidity(min_liquidity, max_tokens, deadline, depositer, deposit_ont_amt
     else:
         # Make sure the factory and token address are not empty, make sure initial depositing amount is greater than 0
         factory = factoryAddress()
-        assert (len(factory) > 0 and len(tokenAddr) > 0 and deposit_ont_amt > 0)
+        assert (len(factory) > 0 and len(tokenAddr) > 0 and deposit_ontd_amt > 0)
         # Obtain the exchange hash correlated with tokenHash and ensure it equals current contract hash
         exchange = DynamicAppCall(factory, GetExchange_MethodName, [bytearray_reverse(tokenAddr)])
         assert (exchange == self)
         # Update the depositer's share balance and the total supply
         tokenAmount = max_tokens
-        initialLiquidity = deposit_ont_amt
+        initialLiquidity = deposit_ontd_amt
         Put(GetContext(), concat(BALANCE_PREFIX, depositer), initialLiquidity)
         Put(GetContext(), TOTAL_SUPPLY_KEY, initialLiquidity)
     # Transfer token from depositer to current contract
     assert (DynamicAppCall(tokenAddr, TransferFrom_MethodName, [self, depositer, self, tokenAmount]))
     # Fire event
-    AddLiquidityEvent(depositer, deposit_ont_amt, tokenAmount)
+    AddLiquidityEvent(depositer, deposit_ontd_amt, tokenAmount)
     TransferEvent(ZERO_ADDRESS, depositer, liquidityMinted)
     # return minted liquidity or minted shares
     return liquidityMinted
 
 
-def removeLiquidity(amount, min_ont, min_tokens, deadline, withdrawer):
+def removeLiquidity(amount, min_ontd, min_tokens, deadline, withdrawer):
     """
     Burn UNI tokens to withdraw ETH and Tokens at current ratio
 
     :param amount: Amount of UNI burned
-    :param min_ont: Minimum Ont withdrawn
+    :param min_ontd: Minimum Ontd withdrawn
     :param min_tokens: Minimum tokens withdrawn
     :param deadline: Time after which this transaction can no longer be executed
     :param withdrawer: Account address who wants to remove his shares of Ont and tokens from liquidity pool
     :return: The amount of Ont and tokens withdrawn
     """
     # Ensure conditions are met
-    assert (amount > 0 and deadline > GetTime() and min_ont > 0 and min_tokens > 0)
+    assert (amount > 0 and deadline > GetTime() and min_ontd > 0 and min_tokens > 0)
     assert (CheckWitness(withdrawer))
     curSupply = totalSupply()
     assert (curSupply > 0)
@@ -376,68 +374,66 @@ def removeLiquidity(amount, min_ont, min_tokens, deadline, withdrawer):
     tokenAddr = tokenAddress()
     tokenReserve = DynamicAppCall(tokenAddr, BalanceOf_MethodName, [self])
     # Obtain native asset reserve balance of current contract
-    ontReserve = Invoke(0, NATIVE_ASSET_ADDRESS, BalanceOf_MethodName, state(self))
+    ontdReserve = DynamicAppCall(ONTD_ADDRESS, BalanceOf_MethodName, [self])
     # Calculate how many OEP4 tokens should be withdrawn by the withdrawer
     tokenAmount = amount * tokenReserve / curSupply
     # Calculate how much native asset should be withdrawn by the withdrawer
-    ongAmount = amount * ontReserve / curSupply
+    ontdAmount = amount * ontdReserve / curSupply
     # Ensure the calculated withdrawn amounts are no less than required, otherwise, roll back this tx
-    assert (tokenAmount >= min_ont and tokenAmount >= min_tokens)
+    assert (tokenAmount >= min_ontd and tokenAmount >= min_tokens)
     # Update withdrawer's balance and total supply
-    # TODO: check if this balance check is redundant
     oldBalance = balanceOf(withdrawer)
     newBalance = oldBalance - amount
     assert (newBalance < oldBalance)
     Put(GetContext(), concat(BALANCE_PREFIX, withdrawer), newBalance)
     Put(GetContext(), TOTAL_SUPPLY_KEY, curSupply - amount)
 
-    # Transfer ongAmount of native asset to withdrawer
-    assert (Invoke(0, NATIVE_ASSET_ADDRESS, Transfer_MethodName, [state(self, withdrawer, ongAmount)]))
-
+    # Transfer ontdAmount of native asset to withdrawer
+    assert (DynamicAppCall(ONTD_ADDRESS, Transfer_MethodName, [self, withdrawer, ontdAmount]))
     # Fire event
-    RemoveLiquidityEvent(withdrawer, ongAmount, tokenAmount)
+    RemoveLiquidityEvent(withdrawer, ontdAmount, tokenAmount)
     TransferEvent(withdrawer, ZERO_ADDRESS, amount)
-    return [ongAmount, tokenAmount]
+    return [ontdAmount, tokenAmount]
 
 
 
-def _ontToTokenInput(ont_sold, min_tokens, deadline, buyer, recipient):
+def _ontToTokenInput(ontd_sold, min_tokens, deadline, buyer, recipient):
     # Check signature of buyer
     assert (CheckWitness(buyer))
-    assert (deadline >= GetTime() and ont_sold > 0 and min_tokens > 0)
+    assert (deadline >= GetTime() and ontd_sold > 0 and min_tokens > 0)
     # Obtain the token balance and native asset balance
     tokenHash = tokenAddress()
     self = GetExecutingScriptHash()
     tokenReserve = DynamicAppCall(tokenHash, BalanceOf_MethodName, [self])
-    ontReserve = Invoke(0, NATIVE_ASSET_ADDRESS, BalanceOf_MethodName, state(self))
-    # Calculate how many tokens should be transferred to recipient considering buyer provide ont_sold amount of native asset ong
-    tokenBought = _getInputPrice(ont_sold, ontReserve, tokenReserve)
+    ontdReserve = DynamicAppCall(ONTD_ADDRESS, BalanceOf_MethodName, [self])
+    # Calculate how many tokens should be transferred to recipient considering buyer provide ont_sold amount of native asset ont
+    tokenBought = _getInputPrice(ontd_sold, ontdReserve, tokenReserve)
     # Ensure the calculated amount of token bought is no less than min_tokens required
     assert (tokenBought >= min_tokens)
-    # Transfer ont_sold amount of ont from buyer to self contract address
-    assert (Invoke(0, NATIVE_ASSET_ADDRESS, Transfer_MethodName, [state(buyer, self, ont_sold)]))
+    # Transfer ontd_sold amount of ontd from buyer to self contract address
+    assert (DynamicAppCall(ONTD_ADDRESS, Transfer_MethodName, [buyer, self, ontd_sold]))
     # Transfer tokenBought amount of tokens directly from this exchange to recipient
     assert (DynamicAppCall(tokenHash, Transfer_MethodName, [self, recipient, tokenBought]))
     # Fire event
-    TokenPurchaseEvent(buyer, ont_sold, tokenBought)
+    TokenPurchaseEvent(buyer, ontd_sold, tokenBought)
     return tokenBought
 
 
-def ontToTokenSwapInput(min_tokens, deadline, invoker, ont_amount):
+def ontToTokenSwapInput(min_tokens, deadline, invoker, ontd_amount):
     """
     Convert ont_amount of Ont to tokens and transfer tokens to invoker with conditions:
     1. tokens bought no less than min_tokens
     2. tx executed no late than deadline
 
-    :param min_tokens: min_tokens invoker expects providing ont_amount of ong
+    :param min_tokens: min_tokens invoker expects providing ont_amount of ont
     :param deadline: Time after which this transaction can no longer be executed
     :param invoker: The user's account address
-    :param ont_amount: The amount of ont user provides
+    :param ontd_amount: The amount of ont user provides
     :return: Amount of tokens bought
     """
-    return _ontToTokenInput(ont_amount, min_tokens, deadline, invoker, invoker)
+    return _ontToTokenInput(ontd_amount, min_tokens, deadline, invoker, invoker)
 
-def ontToTokenTransferInput(min_tokens, deadline, recipient, invoker, ont_amount):
+def ontToTokenTransferInput(min_tokens, deadline, recipient, invoker, ontd_amount):
     """
     Convert Ont to tokens and transfer tokens to recipient with conditions:
     1. tokens bought no less than min_tokens
@@ -447,34 +443,34 @@ def ontToTokenTransferInput(min_tokens, deadline, recipient, invoker, ont_amount
     :param deadline: Time after which this tx will not be executed
     :param recipient: Address that will receive output tokens
     :param invoker: msg sender of this tx, account address wishing exchange ont for tokens
-    :param ont_amount: Amount of Ont invoker provides to buy tokens
+    :param ontd_amount: Amount of Ont invoker provides to buy tokens
     :return:
     """
     assert (recipient != GetExecutingScriptHash() and len(recipient) == 20 and recipient != ZERO_ADDRESS)
-    return _ontToTokenInput(ont_amount, min_tokens, deadline, invoker, recipient)
+    return _ontToTokenInput(ontd_amount, min_tokens, deadline, invoker, recipient)
 
 
-def _ontToTokenOutput(tokens_bought, max_ont, deadline, buyer, recipient):
+def _ontToTokenOutput(tokens_bought, max_ontd, deadline, buyer, recipient):
     # Check signature of buyer
     assert (CheckWitness(buyer))
     # Legal check
-    assert (deadline >= GetTime() and tokens_bought > 0 and max_ont > 0)
+    assert (deadline >= GetTime() and tokens_bought > 0 and max_ontd > 0)
     # Obtain the token balance and native asset balance of contract
     tokenHash = tokenAddress()
     self = GetExecutingScriptHash()
     tokenReserve = DynamicAppCall(tokenHash, BalanceOf_MethodName, [self])
-    ontReserve = Invoke(0, NATIVE_ASSET_ADDRESS, BalanceOf_MethodName, state(self))
+    ontdReserve = DynamicAppCall(ONTD_ADDRESS, BalanceOf_MethodName, [self])
     # Calculate how much native asset we have to provide to acquire tokens_bought amount of token
-    ongSold = _getOutputPrice(tokens_bought, ontReserve, tokenReserve)
-    # Condition check: make sure ongSold that will be deducted from buyer is no more than max_ont
-    assert (ongSold <= max_ont)
-    # Transfer ongSold amount of native asset directly from buyer account to this contract
-    assert (Invoke(0, NATIVE_ASSET_ADDRESS, Transfer_MethodName, [state(buyer, self, ongSold)]))
+    ontdSold = _getOutputPrice(tokens_bought, ontdReserve, tokenReserve)
+    # Condition check: make sure ontdSold that will be deducted from buyer is no more than max_ont
+    assert (ontdSold <= max_ontd)
+    # Transfer ontdSold amount of native asset directly from buyer account to this contract
+    assert (DynamicAppCall(ONTD_ADDRESS, Transfer_MethodName, [buyer, self, ontdSold]))
     # Transfer tokens_bought amount of token from contract to recipient account address
     assert (DynamicAppCall(tokenHash, Transfer_MethodName, [self, recipient, tokens_bought]))
-    return ongSold
+    return ontdSold
 
-def ontToTokenSwapOutput(tokens_bought, deadline, invoker, ont_amount):
+def ontToTokenSwapOutput(tokens_bought, deadline, invoker, ontd_amount):
     """
     Convert some Ont, yet less than ont_amount, to tokens_bought amount of tokens and transfer tokens to invoker with conditions:
     1. the spent ont amount should be no greater than ont_amount
@@ -483,12 +479,12 @@ def ontToTokenSwapOutput(tokens_bought, deadline, invoker, ont_amount):
     :param tokens_bought: Exact amount of tokens bought
     :param deadline: Time after which this tx can no longer be executed
     :param invoker: User expecting to exchange with ont for tokens
-    :param ont_amount: Amount of Maximum ont invoker provides for acquiring tokens_bought tokens
+    :param ontd_amount: Amount of Maximum ont invoker provides for acquiring tokens_bought tokens
     :return: Amount of ont sold for obtaining tokens_bought amount of tokens
     """
-    return _ontToTokenOutput(tokens_bought, ont_amount, deadline, invoker, invoker)
+    return _ontToTokenOutput(tokens_bought, ontd_amount, deadline, invoker, invoker)
 
-def ontToTokenTransferOutput(tokens_bought, deadline, recipient, invoker, ont_amount):
+def ontToTokenTransferOutput(tokens_bought, deadline, recipient, invoker, ontd_amount):
     """
     Convert some Ont, yet less than ont_amount, to tokens_bought amount of tokens and transfer tokens to recipient with conditions:
     1. the spent ont amount should be no greater than ont_amount
@@ -501,136 +497,136 @@ def ontToTokenTransferOutput(tokens_bought, deadline, recipient, invoker, ont_am
     :param ont_amount: Amount of Maximum ont invoker provides for acquiring tokens_bought tokens
     :return: Amount of ont sold for obtaining tokens_bought amount of tokens
     """
-    return _ontToTokenOutput(tokens_bought, ont_amount, deadline, invoker, recipient)
+    return _ontToTokenOutput(tokens_bought, ontd_amount, deadline, invoker, recipient)
 
 
-def _tokenToOntInput(tokens_sold, min_ont, deadline, buyer, recipient):
+def _tokenToOntInput(tokens_sold, min_ontd, deadline, buyer, recipient):
     # Check the signature of buyer
     assert (CheckWitness(buyer))
-    assert (deadline >= GetTime() and tokens_sold > 0 and min_ont > 0)
+    assert (deadline >= GetTime() and tokens_sold > 0 and min_ontd > 0)
     # Obtain the current token balance and native asset balance
     tokenHash = tokenAddress()
     self = GetExecutingScriptHash()
     tokenReserve = DynamicAppCall(tokenHash, BalanceOf_MethodName, [self])
-    ontReserve = Invoke(0, NATIVE_ASSET_ADDRESS, BalanceOf_MethodName, state(self))
+    ontdReserve = DynamicAppCall(ONTD_ADDRESS, BalanceOf_MethodName, [self])
     # Calculate how much native asset should be deducted from the pool if tokens_sold amount of token are added
-    ongBought = _getInputPrice(tokens_sold, tokenReserve, ontReserve)
-    # Ensure the ongBought is no less than the expected minimum native asset ont amount
-    assert (ongBought >= min_ont)
+    ontdBought = _getInputPrice(tokens_sold, tokenReserve, ontdReserve)
+    # Ensure the ontdBought is no less than the expected minimum native asset ont amount
+    assert (ontdBought >= min_ontd)
     # Transfer directly tokens_sold amount of token from buyer account to current contract
     assert (DynamicAppCall(tokenHash, TransferFrom_MethodName, [self, buyer, self, tokens_sold]))
     # Transfer native asset directly to the recipient
-    assert (Invoke(0, NATIVE_ASSET_ADDRESS, Transfer_MethodName, [state(self, recipient, ongBought)]))
+    assert (DynamicAppCall(ONTD_ADDRESS, Transfer_MethodName, [self, recipient, ontdBought]))
     # Fire event
-    OntPurchaseEvent(buyer, tokens_sold, ongBought)
-    return ongBought
+    OntPurchaseEvent(buyer, tokens_sold, ontdBought)
+    return ontdBought
 
 
-def tokenToOntSwapInput(tokens_sold, min_ont, deadline, tokens_seller):
+def tokenToOntSwapInput(tokens_sold, min_ontd, deadline, tokens_seller):
     """
     Convert tokens_sold amount of tokens to Ont and transfer ont to tokens_seller with conditions:
     1. the converted ont should be no less than min_ont
     2. tx can no long be executed after deadline
 
     :param tokens_sold: Amount of tokens sold
-    :param min_ont: Minimum Ont after converted
+    :param min_ontd: Minimum Ont after converted
     :param deadline: Time after which this tx can no longer be executed
     :param tokens_seller: Account address who wishes convert tokens_sold amount token to some ont no less than min_ont
     :return: Amount of ont converted
     """
-    return _tokenToOntInput(tokens_sold, min_ont, deadline, tokens_seller, tokens_seller)
+    return _tokenToOntInput(tokens_sold, min_ontd, deadline, tokens_seller, tokens_seller)
 
-def tokenToOntTransferInput(tokens_sold, min_ont, deadline, tokens_seller, recipient):
+def tokenToOntTransferInput(tokens_sold, min_ontd, deadline, tokens_seller, recipient):
     """
     Convert tokens_sold amount of tokens to Ont and transfer ont to recipient with conditions:
     1. the converted ont should be no less than min_ont
     2. tx can no long be executed after deadline
 
     :param tokens_sold: Amount of tokens sold
-    :param min_ont: Minimum Ont after converted
+    :param min_ontd: Minimum Ont after converted
     :param deadline: Time after which this tx can no longer be executed
     :param tokens_seller: Account address who wishes convert tokens_sold amount token to some ont no less than min_ont
     :param recipient: Address that receives output Ont
     :return:
     """
     assert (recipient != GetExecutingScriptHash() and len(recipient) == 20 and recipient != ZERO_ADDRESS)
-    return _tokenToOntInput(tokens_sold, min_ont, deadline, tokens_seller, recipient)
+    return _tokenToOntInput(tokens_sold, min_ontd, deadline, tokens_seller, recipient)
 
-def _tokenToOntOutput(ont_bought, max_tokens, deadline, buyer, recipient):
+def _tokenToOntOutput(ontd_bought, max_tokens, deadline, buyer, recipient):
     # Check signature of buyer
     assert (CheckWitness(buyer))
-    assert (deadline > GetTime() and ont_bought > 0)
+    assert (deadline > GetTime() and ontd_bought > 0)
     # Obtain the current balance of token and native asset
     tokenHash = tokenAddress()
     self = GetExecutingScriptHash()
     tokenReserve = DynamicAppCall(tokenHash, BalanceOf_MethodName, [self])
-    ontReserve = Invoke(0, NATIVE_ASSET_ADDRESS, BalanceOf_MethodName, state(self))
+    ontdReserve = DynamicAppCall(ONTD_ADDRESS, BalanceOf_MethodName, [self])
     # Calculate how much token will be added into the pool providing the amount of token should be worth of ont_bought native asset
-    tokensSold = _getOutputPrice(ont_bought, tokenReserve, ontReserve)
+    tokensSold = _getOutputPrice(ontd_bought, tokenReserve, ontdReserve)
     # Make sure the sold token will be no greater than max_token if he wants ont_bought amount of native asset
     assert (max_tokens >= tokensSold)
     # Transfer na_bought native asset directly to the recipient address
-    assert (Invoke(0, NATIVE_ASSET_ADDRESS, Transfer_MethodName, [state(self, recipient, ont_bought)]))
+    assert (DynamicAppCall(ONTD_ADDRESS, Transfer_MethodName, [self, recipient, ontd_bought]))
     # Transfer tokensSold amount of token from buyer to contract
     assert (DynamicAppCall(tokenHash, TransferFrom_MethodName, [self, buyer, self, tokensSold]))
     # Fire event
-    OntPurchaseEvent(buyer, tokensSold, ont_bought)
+    OntPurchaseEvent(buyer, tokensSold, ontd_bought)
     return tokensSold
 
-def tokenToOntSwapOutput(ont_bought, max_tokens, deadline, invoker):
+def tokenToOntSwapOutput(ontd_bought, max_tokens, deadline, invoker):
     """
     Convert some tokens to specific ont_bought amount of ont and transfer ont to invoker with conditions
     1. the required amount of tokens equal to ont_bought should be no more than max_tokens
     2. tx can no long be executed after deadline
 
-    :param ont_bought: Amount of ont converted from some unknown amount of tokens
+    :param ontd_bought: Amount of ont converted from some unknown amount of tokens
     :param max_tokens:  Maximum amount of tokens that will be sold to obtain ont_bought amount of ont
     :param deadline: Time after which this tx can no longer be executed
-    :param invoker: Account address who wishes to convert some amount of tokens (no more than max_tokens) to ont_bought amount of ong
-    :return: Amount of tokens invoker should sell to acquire ont_bought amount of ong
+    :param invoker: Account address who wishes to convert some amount of tokens (no more than max_tokens) to ont_bought amount of ont
+    :return: Amount of tokens invoker should sell to acquire ont_bought amount of ont
     """
-    return _tokenToOntOutput(ont_bought, max_tokens, deadline, invoker, invoker)
+    return _tokenToOntOutput(ontd_bought, max_tokens, deadline, invoker, invoker)
 
-def tokenToOntTransferOutput(ont_bought, max_tokens, deadline, recipient, invoker):
+def tokenToOntTransferOutput(ontd_bought, max_tokens, deadline, recipient, invoker):
     """
     Convert some tokens to specific ont_bought amount of ont and transfer ont to recipient with conditions
     1. the required amount of tokens equal to ont_bought should be no more than max_tokens
     2. tx can no long be executed after deadline
 
-    :param ont_bought: Amount of ont converted from some unknown amount of tokens
-    :param max_tokens:  Maximum amount of tokens that will be sold to obtain ont_bought amount of ong
+    :param ontd_bought: Amount of ont converted from some unknown amount of tokens
+    :param max_tokens:  Maximum amount of tokens that will be sold to obtain ont_bought amount of ont
     :param deadline: Time after which this tx can no longer be executed
-    :param recipient: Address that will receive ong
-    :param invoker: Account address who wishes to convert some amount of tokens (no more than max_tokens) to ont_bought amount of ong
+    :param recipient: Address that will receive ont
+    :param invoker: Account address who wishes to convert some amount of tokens (no more than max_tokens) to ont_bought amount of ont
     :return:
     """
     assert (recipient != GetExecutingScriptHash() and len(recipient) == 20 and recipient != ZERO_ADDRESS)
-    return _tokenToOntOutput(ont_bought, max_tokens, deadline, invoker, recipient)
+    return _tokenToOntOutput(ontd_bought, max_tokens, deadline, invoker, recipient)
 
-def _tokenToTokenInput(tokens_sold, min_tokens_bought, min_ont_bought, deadline, buyer, recipient, exchange_addr):
+def _tokenToTokenInput(tokens_sold, min_tokens_bought, min_ontd_bought, deadline, buyer, recipient, exchange_addr):
     # Check the signature of buyer
     assert (CheckWitness(buyer))
     # Legal check
-    assert (deadline >= GetTime() and tokens_sold > 0 and min_tokens_bought > 0 and min_ont_bought > 0)
+    assert (deadline >= GetTime() and tokens_sold > 0 and min_tokens_bought > 0 and min_ontd_bought > 0)
     self = GetExecutingScriptHash()
     assert (exchange_addr != self and exchange_addr != ZERO_ADDRESS and len(exchange_addr) == 20)
     tokenHash = tokenAddress()
     tokenReserve = DynamicAppCall(tokenHash, BalanceOf_MethodName, [self])
-    ontReserve = Invoke(0, NATIVE_ASSET_ADDRESS, BalanceOf_MethodName, state(self))
-    ongBought = _getInputPrice(tokens_sold, tokenReserve, ontReserve)
+    ontReserve = DynamicAppCall(ONTD_ADDRESS, BalanceOf_MethodName, [self])
+    ontdBought = _getInputPrice(tokens_sold, tokenReserve, ontReserve)
     # Make sure tokens_sold amount of tokenHash can be exchanged for at least min_ont_bought amount of native asset
-    assert (ongBought >= min_ont_bought)
+    assert (ontdBought >= min_ontd_bought)
     # Transfer tokens_sold amount of tokenHash to current contract
     assert (DynamicAppCall(tokenHash, TransferFrom_MethodName, [self, buyer, self, tokens_sold]))
-    # Invoke another exchange contract to sell ongBought amount of native asset and buy at least
+    # Invoke another exchange contract to sell ontdBought amount of native asset and buy at least
     # min_tokens_bought amount of another token and transfer the bought token to recipient directly
-    tokensBought = DynamicAppCall(exchange_addr, OntToTokenTransferInput_MethodName, [min_tokens_bought, deadline, recipient, self, ongBought])
+    tokensBought = DynamicAppCall(exchange_addr, OntToTokenTransferInput_MethodName, [min_tokens_bought, deadline, recipient, self, ontdBought])
     assert (tokensBought > 0)
     # Fire event
-    OntPurchaseEvent(buyer, tokens_sold, ongBought)
+    OntPurchaseEvent(buyer, tokens_sold, ontdBought)
     return
 
-def tokenToTokenSwapInput(tokens_sold, min_tokens_bought, min_ont_bought, deadline, token_addr, invoker):
+def tokenToTokenSwapInput(tokens_sold, min_tokens_bought, min_ontd_bought, deadline, token_addr, invoker):
     """
     Convert token1 within current exchange to another token2 of token_addr and transfer token_addr to recipient with conditions:
     1. tokens_sold amount of token1 will be sold out
@@ -642,16 +638,16 @@ def tokenToTokenSwapInput(tokens_sold, min_tokens_bought, min_ont_bought, deadli
 
     :param tokens_sold: Amount of token sold
     :param min_tokens_bought: Minimum tokens of token_addr purchased
-    :param min_ont_bought: Minimum ont purchased as intermediary
+    :param min_ontd_bought: Minimum ont purchased as intermediary
     :param deadline: Time after which this tx can no longer be executed
     :param token_addr: Address of token being purchased
     :param invoker: Account address expecting to convert his tokens to token_addr
     :return: Amount of tokens (token_addr) bought
     """
     exchangeAddr = DynamicAppCall(factoryAddress(), GetExchange_MethodName, [token_addr])
-    return _tokenToTokenInput(tokens_sold, min_tokens_bought, min_ont_bought, deadline, invoker, invoker, exchangeAddr)
+    return _tokenToTokenInput(tokens_sold, min_tokens_bought, min_ontd_bought, deadline, invoker, invoker, exchangeAddr)
 
-def tokenToTokenTransferInput(tokens_sold, min_tokens_bought, min_ont_bought, deadline, recipient, token_addr, invoker):
+def tokenToTokenTransferInput(tokens_sold, min_tokens_bought, min_ontd_bought, deadline, recipient, token_addr, invoker):
     """
     Convert tokens_sold amount of token1 within current exchange to another token2 of token_addr and transfer token_addr to recipient with conditions:
     1. tokens_sold amount of token1 will be sold out
@@ -663,7 +659,7 @@ def tokenToTokenTransferInput(tokens_sold, min_tokens_bought, min_ont_bought, de
 
     :param tokens_sold: Amount of token sold
     :param min_tokens_bought: Minimum tokens of token_addr purchased
-    :param min_ont_bought: Minimum ont purchased as intermediary
+    :param min_ontd_bought: Minimum ont purchased as intermediary
     :param deadline: Time after which this tx can no longer be executed
     :param recipient: Address that receives output token_addr
     :param token_addr: Address of token being purchased
@@ -671,7 +667,7 @@ def tokenToTokenTransferInput(tokens_sold, min_tokens_bought, min_ont_bought, de
     :return: Amount of tokens (token_addr) bought
     """
     exchangeAddr = DynamicAppCall(factoryAddress(), GetExchange_MethodName, [token_addr])
-    return _tokenToTokenInput(tokens_sold, min_tokens_bought, min_ont_bought, deadline, invoker, recipient, exchangeAddr)
+    return _tokenToTokenInput(tokens_sold, min_tokens_bought, min_ontd_bought, deadline, invoker, recipient, exchangeAddr)
 
 
 def _tokenToTokenOutput(tokens_bought, max_tokens_sold, max_ont_sold, deadline, buyer, recipient, exchange_addr):
@@ -682,25 +678,25 @@ def _tokenToTokenOutput(tokens_bought, max_tokens_sold, max_ont_sold, deadline, 
     self = GetExecutingScriptHash()
     assert (exchange_addr != self and exchange_addr != ZERO_ADDRESS and len(exchange_addr) == 20)
     # Calculate how much native asset should we provide to buy tokens_bought amount token in exchange_addr platform
-    ongBought = DynamicAppCall(exchange_addr, GetOntToTokenOutputPrice_MethodName, [tokens_bought])
+    ontdBought = DynamicAppCall(exchange_addr, GetOntToTokenOutputPrice_MethodName, [tokens_bought])
     tokenHash = tokenAddress()
     # Obtain current token and native asset balance of current contract
     tokenReserve = DynamicAppCall(tokenHash, BalanceOf_MethodName, [self])
-    ontReserve = Invoke(0, NATIVE_ASSET_ADDRESS, BalanceOf_MethodName, state(self))
-    # Calculate how much tokens we have to sell to obtain ongBought amount of native asset in current exchange
-    tokensSold = _getOutputPrice(ongBought, tokenReserve, ontReserve)
+    ontdReserve = DynamicAppCall(ONTD_ADDRESS, BalanceOf_MethodName, [self])
+    # Calculate how much tokens we have to sell to obtain ontdBought amount of native asset in current exchange
+    tokensSold = _getOutputPrice(ontdBought, tokenReserve, ontdReserve)
     # Condition check
     # 1. The tokens sold to obtain tokens_bought amount of another token is at most max_token_sold
     # 2. To acquire tokens_bought amount of another token, we expect to provide at most max_ont_sold amount of native asset
-    assert (max_tokens_sold >= tokensSold and max_ont_sold >= ongBought)
+    assert (max_tokens_sold >= tokensSold and max_ont_sold >= ontdBought)
     # Transfer tokensSold amount of token to current contract
     assert (DynamicAppCall(tokenHash, TransferFrom_MethodName, [self, buyer, self, tokensSold]))
-    # Invoke another exchange to convert ongBought amount native asset to tokens_bought amount of another token
-    assert (DynamicAppCall(exchange_addr, OntToTokenTransferOutput_MethodName, [tokens_bought, deadline, recipient, self, ongBought]))
+    # Invoke another exchange to convert ontdBought amount native asset to tokens_bought amount of another token
+    assert (DynamicAppCall(exchange_addr, OntToTokenTransferOutput_MethodName, [tokens_bought, deadline, recipient, self, ontdBought]))
     return tokensSold
 
 
-def tokenToTokenSwapOutput(tokens_bought, max_tokens_sold, max_ont_sold, deadline, token_addr, invoker):
+def tokenToTokenSwapOutput(tokens_bought, max_tokens_sold, max_ontd_sold, deadline, token_addr, invoker):
     """
     Convert some token1 within current exchange to tokens_bought amount of another token2 of token_addr and transfer token_addr to invoker with conditions:
     1. tokens_bought amount of token2 should be bought
@@ -712,16 +708,16 @@ def tokenToTokenSwapOutput(tokens_bought, max_tokens_sold, max_ont_sold, deadlin
 
     :param tokens_bought: Amount of tokens (token_addr) bought
     :param max_tokens_sold: Maximum tokens (within current exchange) sold
-    :param max_ont_sold: Maximum Ont purchased as intermediary
+    :param max_ontd_sold: Maximum Ont purchased as intermediary
     :param deadline: Time after which this tx can no longer be executed
     :param token_addr: Address of token being purchased
     :param invoker: Account address expecting to convert his tokens to token_addr
     :return: Amount of tokens (within current exchange) sold
     """
     exchangeAddr = DynamicAppCall(factoryAddress(), GetExchange_MethodName, [token_addr])
-    return _tokenToTokenOutput(tokens_bought, max_tokens_sold, max_ont_sold, deadline, invoker, invoker, exchangeAddr)
+    return _tokenToTokenOutput(tokens_bought, max_tokens_sold, max_ontd_sold, deadline, invoker, invoker, exchangeAddr)
 
-def tokenToTokenTransferOutput(tokens_bought, max_tokens_sold, max_ont_sold, deadline, recipient, token_addr, invoker):
+def tokenToTokenTransferOutput(tokens_bought, max_tokens_sold, max_ontd_sold, deadline, recipient, token_addr, invoker):
     """
     Convert some token1 within current exchange to tokens_bought amount of another token2 of token_addr and transfer token_addr to recipient with conditions:
     1. tokens_bought amount of token2 should be bought
@@ -733,7 +729,7 @@ def tokenToTokenTransferOutput(tokens_bought, max_tokens_sold, max_ont_sold, dea
 
     :param tokens_bought: Amount of tokens (token_addr) bought
     :param max_tokens_sold: Maximum tokens (within current exchange) sold
-    :param max_ont_sold: Maximum Ont purchased as intermediary
+    :param max_ontd_sold: Maximum Ont purchased as intermediary
     :param deadline: Time after which this tx can no longer be executed
     :param recipient: Address that receives output token_addr
     :param token_addr: Address of token being purchased
@@ -741,10 +737,10 @@ def tokenToTokenTransferOutput(tokens_bought, max_tokens_sold, max_ont_sold, dea
     :return: Amount of tokens (within current exchange) sold
     """
     exchangeAddr = DynamicAppCall(factoryAddress(), GetExchange_MethodName, [token_addr])
-    return _tokenToTokenOutput(tokens_bought, max_tokens_sold, max_ont_sold, deadline, invoker, recipient, exchangeAddr)
+    return _tokenToTokenOutput(tokens_bought, max_tokens_sold, max_ontd_sold, deadline, invoker, recipient, exchangeAddr)
 
 
-def tokenToExchangeSwapInput(tokens_sold, min_tokens_bought, min_ont_bought, deadline, exchange_addr, invoker):
+def tokenToExchangeSwapInput(tokens_sold, min_tokens_bought, min_ontd_bought, deadline, exchange_addr, invoker):
     """
     Convert token1 within current exchange to another token2 supported within exchange_addr and transfer token2 to invoker with conditions:
     1. tokens_sold amount of token1 will be sold out
@@ -756,15 +752,15 @@ def tokenToExchangeSwapInput(tokens_sold, min_tokens_bought, min_ont_bought, dea
 
     :param tokens_sold: Amount of token sold
     :param min_tokens_bought: Minimum tokens of token_addr purchased
-    :param min_ont_bought: Minimum ont purchased as intermediary
+    :param min_ontd_bought: Minimum ont purchased as intermediary
     :param deadline: Time after which this tx can no longer be executed
     :param exchange_addr: Address of exchange for the token being purchased
     :param invoker: Account address expecting to convert his tokens to exchange_addr.token
     :return: Amount of tokens (exchange_addr.token) bought
     """
-    return _tokenToTokenInput(tokens_sold, min_tokens_bought, min_ont_bought, deadline, invoker, invoker, exchange_addr)
+    return _tokenToTokenInput(tokens_sold, min_tokens_bought, min_ontd_bought, deadline, invoker, invoker, exchange_addr)
 
-def tokenToExchangeTransferInput(tokens_sold, min_tokens_bought, min_ont_bought, deadline, recipient, exchange_addr, invoker):
+def tokenToExchangeTransferInput(tokens_sold, min_tokens_bought, min_ontd_bought, deadline, recipient, exchange_addr, invoker):
     """
     Convert token1 within current exchange to another token2 supported within exchange_addr and transfer token2 to recipient with conditions:
     1. tokens_sold amount of token1 will be sold out
@@ -784,10 +780,10 @@ def tokenToExchangeTransferInput(tokens_sold, min_tokens_bought, min_ont_bought,
     :return: Amount of tokens (exchange_addr.token) bought
     """
     assert (recipient != GetExecutingScriptHash())
-    return _tokenToTokenInput(tokens_sold, min_tokens_bought, min_ont_bought, deadline, invoker, recipient, exchange_addr)
+    return _tokenToTokenInput(tokens_sold, min_tokens_bought, min_ontd_bought, deadline, invoker, recipient, exchange_addr)
 
 
-def tokenToExchangeSwapOutput(tokens_bought, max_tokens_sold, max_ont_sold, deadline, exchange_addr, invoker):
+def tokenToExchangeSwapOutput(tokens_bought, max_tokens_sold, max_ontd_sold, deadline, exchange_addr, invoker):
     """
     Convert some token1 within current exchange to tokens_bought of another token2 supported within exchange_addr
     and transfer tokens_bought amount of token2 to invoker with conditions:
@@ -806,9 +802,9 @@ def tokenToExchangeSwapOutput(tokens_bought, max_tokens_sold, max_ont_sold, dead
     :param invoker: Account address expecting to convert his tokens to exchange_addr.token
     :return: Amount of tokens (self.token) sold
     """
-    return _tokenToTokenOutput(tokens_bought, max_tokens_sold, max_ont_sold, deadline, invoker, invoker, exchange_addr)
+    return _tokenToTokenOutput(tokens_bought, max_tokens_sold, max_ontd_sold, deadline, invoker, invoker, exchange_addr)
 
-def tokenToExchangeTransferOutput(tokens_bought, max_tokens_sold, max_ont_sold, deadline, recipient, exchange_addr, invoker):
+def tokenToExchangeTransferOutput(tokens_bought, max_tokens_sold, max_ontd_sold, deadline, recipient, exchange_addr, invoker):
     """
     Convert some token1 within current exchange to tokens_bought of another token2 supported within exchange_addr
     and transfer tokens_bought amount of token2 to invoker with conditions:
@@ -829,23 +825,23 @@ def tokenToExchangeTransferOutput(tokens_bought, max_tokens_sold, max_ont_sold, 
     :return: Amount of tokens (self.token) sold
     """
     assert (recipient != GetExecutingScriptHash())
-    return _tokenToTokenOutput(tokens_bought, max_tokens_sold, max_ont_sold, deadline, invoker, recipient, exchange_addr)
+    return _tokenToTokenOutput(tokens_bought, max_tokens_sold, max_ontd_sold, deadline, invoker, recipient, exchange_addr)
 
 
-def getOntToTokenInputPrice(ont_sold):
+def getOntToTokenInputPrice(ontd_sold):
     """
-    Calculate how many tokens user can get if he provides an exact input ong
+    Calculate how many tokens user can get if he provides an exact input ont
     :param ont_sold: Amount of ont sold
-    :return: Amount of tokens that can be bought with ont_sold amount of ong
+    :return: Amount of tokens that can be bought with ont_sold amount of ont
     """
-    assert (ont_sold > 0)
+    assert (ontd_sold > 0)
     # Obtain the token and native asset balance of contract
     tokenHash = tokenAddress()
     self = GetExecutingScriptHash()
     tokenReserve = DynamicAppCall(tokenHash, BalanceOf_MethodName, [self])
-    ontReserve = Invoke(0, NATIVE_ASSET_ADDRESS, BalanceOf_MethodName, state(self))
+    ontdReserve = DynamicAppCall(ONTD_ADDRESS, BalanceOf_MethodName, [self])
     # Calculate how many token we will get if we provide ont_sold amount of native asset
-    return _getInputPrice(ont_sold, ontReserve, tokenReserve)
+    return _getInputPrice(ontd_sold, ontdReserve, tokenReserve)
 
 def getOntToTokenOutputPrice(tokens_bought):
     """
@@ -858,9 +854,9 @@ def getOntToTokenOutputPrice(tokens_bought):
     tokenHash = tokenAddress()
     self = GetExecutingScriptHash()
     tokenReserve = DynamicAppCall(tokenHash, BalanceOf_MethodName, [self])
-    ontReserve = Invoke(0, NATIVE_ASSET_ADDRESS, BalanceOf_MethodName, state(self))
+    ontdReserve = DynamicAppCall(ONTD_ADDRESS, BalanceOf_MethodName, [self])
     # Calculate how many native asset we have to pay to acquire tokens_bought amount of tokens
-    return _getOutputPrice(tokens_bought, ontReserve, tokenReserve)
+    return _getOutputPrice(tokens_bought, ontdReserve, tokenReserve)
 
 def getTokenToOntInputPrice(tokens_sold):
     """
@@ -873,22 +869,22 @@ def getTokenToOntInputPrice(tokens_sold):
     tokenHash = tokenAddress()
     self = GetExecutingScriptHash()
     tokenReserve = DynamicAppCall(tokenHash, BalanceOf_MethodName, [self])
-    ontReserve = Invoke(0, NATIVE_ASSET_ADDRESS, BalanceOf_MethodName, state(self))
-    return _getInputPrice(tokens_sold, tokenReserve, ontReserve)
+    ontdReserve = DynamicAppCall(ONTD_ADDRESS, BalanceOf_MethodName, [self])
+    return _getInputPrice(tokens_sold, tokenReserve, ontdReserve)
 
 def getTokenToOntOutputPrice(ont_bought):
     """
-    Calculate how many tokens use should provide to get ont_bought amount of ong
-    :param ont_bought: Amount of output ong
-    :return: Amount of tokens needed to buy output ong
+    Calculate how many tokens use should provide to get ont_bought amount of ont
+    :param ont_bought: Amount of output ont
+    :return: Amount of tokens needed to buy output ont
     """
     assert (ont_bought > 0)
     # Obtain the token and native asset balance of contract
     tokenHash = tokenAddress()
     self = GetExecutingScriptHash()
     tokenReserve = DynamicAppCall(tokenHash, BalanceOf_MethodName, [self])
-    ontReserve = Invoke(0, NATIVE_ASSET_ADDRESS, BalanceOf_MethodName, state(self))
-    return _getOutputPrice(ont_bought, tokenReserve, ontReserve)
+    ontdReserve = DynamicAppCall(ONTD_ADDRESS, BalanceOf_MethodName, [self])
+    return _getOutputPrice(ont_bought, tokenReserve, ontdReserve)
 
 
 def _getInputPrice(input_amount, input_reserve, output_reserve):
