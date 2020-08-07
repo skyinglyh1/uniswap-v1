@@ -391,6 +391,8 @@ def removeLiquidity(amount, min_ontd, min_tokens, deadline, withdrawer):
 
     # Transfer ontdAmount of native asset to withdrawer
     assert (DynamicAppCall(ONTD_ADDRESS, Transfer_MethodName, [self, withdrawer, ontdAmount]))
+    # Transfer tokenAmount of token to withdrawer
+    assert (DynamicAppCall(tokenAddr, Transfer_MethodName, [self, withdrawer, tokenAmount]))
     # Fire event
     RemoveLiquidityEvent(withdrawer, ontdAmount, tokenAmount)
     TransferEvent(withdrawer, ZERO_ADDRESS, amount)
