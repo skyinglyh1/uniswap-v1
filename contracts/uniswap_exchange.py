@@ -40,6 +40,7 @@ ApprovalEvent = RegisterAction("approval", "owner", "spender", "amount")
 
 # Method name used for Invoke or DynamicAppCall
 Transfer_MethodName = "transfer"
+Approve_MethodName = "approve"
 TransferFrom_MethodName = "transferFrom"
 BalanceOf_MethodName = "balanceOf"
 GetExchange_MethodName = "getExchange"
@@ -411,7 +412,7 @@ def _ontToTokenInput(ontd_sold, min_tokens, deadline, buyer, recipient):
     # Ensure the calculated amount of token bought is no less than min_tokens required
     assert (tokenBought >= min_tokens)
     # Transfer ontd_sold amount of ontd from buyer to self contract address
-    assert (DynamicAppCall(ONTD_ADDRESS, Transfer_MethodName, [buyer, self, ontd_sold]))
+    assert (DynamicAppCall(ONTD_ADDRESS, TransferFrom_MethodName, [self, buyer, self, ontd_sold]))
     # Transfer tokenBought amount of tokens directly from this exchange to recipient
     assert (DynamicAppCall(tokenHash, Transfer_MethodName, [self, recipient, tokenBought]))
     # Fire event
@@ -465,7 +466,7 @@ def _ontToTokenOutput(tokens_bought, max_ontd, deadline, buyer, recipient):
     # Condition check: make sure ontdSold that will be deducted from buyer is no more than max_ont
     assert (ontdSold <= max_ontd)
     # Transfer ontdSold amount of native asset directly from buyer account to this contract
-    assert (DynamicAppCall(ONTD_ADDRESS, Transfer_MethodName, [buyer, self, ontdSold]))
+    assert (DynamicAppCall(ONTD_ADDRESS, TransferFrom_MethodName, [self, buyer, self, ontdSold]))
     # Transfer tokens_bought amount of token from contract to recipient account address
     assert (DynamicAppCall(tokenHash, Transfer_MethodName, [self, recipient, tokens_bought]))
     return ontdSold
@@ -618,15 +619,21 @@ def _tokenToTokenInput(tokens_sold, min_tokens_bought, min_ontd_bought, deadline
     assert (ontdBought >= min_ontd_bought)
     # Transfer tokens_sold amount of tokenHash to current contract
     assert (DynamicAppCall(tokenHash, TransferFrom_MethodName, [self, buyer, self, tokens_sold]))
+
+    # Before we invoke another exchange's "ontTokenTransferOutput" method, we need to approve ontdBought amount of ontd to another exchange
+    # so that another exchange can do ontd.transferFrom(exchange2, exchange1, exchange2, ontdBought)
+    assert (DynamicAppCall(ONTD_ADDRESS, Approve_MethodName, [self, exchange_addr, ontdBought]))
+
     # Invoke another exchange contract to sell ontdBought amount of native asset and buy at least
     # min_tokens_bought amount of another token and transfer the bought token to recipient directly
     tokensBought = DynamicAppCall(exchange_addr, OntToTokenTransferInput_MethodName, [min_tokens_bought, deadline, recipient, self, ontdBought])
     assert (tokensBought > 0)
+
     # Fire event
     OntPurchaseEvent(buyer, tokens_sold, ontdBought)
     return
 
-def tokenToTokenSwapInput(tokens_sold, min_tokens_bought, min_ontd_bought, deadline, token_addr, invoker):
+def tokenToTokenSwapInput(tokens_sold, min_tokens_bought, min_ontd_bought, deadline, token_hash, invoker):
     """
     Convert token1 within current exchange to another token2 of token_addr and transfer token_addr to recipient with conditions:
     1. tokens_sold amount of token1 will be sold out
@@ -644,7 +651,7 @@ def tokenToTokenSwapInput(tokens_sold, min_tokens_bought, min_ontd_bought, deadl
     :param invoker: Account address expecting to convert his tokens to token_addr
     :return: Amount of tokens (token_addr) bought
     """
-    exchangeAddr = DynamicAppCall(factoryAddress(), GetExchange_MethodName, [token_addr])
+    exchangeAddr = DynamicAppCall(factoryAddress(), GetExchange_MethodName, [token_hash])
     return _tokenToTokenInput(tokens_sold, min_tokens_bought, min_ontd_bought, deadline, invoker, invoker, exchangeAddr)
 
 def tokenToTokenTransferInput(tokens_sold, min_tokens_bought, min_ontd_bought, deadline, recipient, token_addr, invoker):
@@ -691,6 +698,11 @@ def _tokenToTokenOutput(tokens_bought, max_tokens_sold, max_ont_sold, deadline, 
     assert (max_tokens_sold >= tokensSold and max_ont_sold >= ontdBought)
     # Transfer tokensSold amount of token to current contract
     assert (DynamicAppCall(tokenHash, TransferFrom_MethodName, [self, buyer, self, tokensSold]))
+
+    # Before we invoke another exchange's "ontTokenTransferOutput" method, we need to approve ontdBought amount of ontd to another exchange
+    # so that another exchange can do ontd.transferFrom(exchange2, exchange1, exchange2, ontdBought)
+    assert (DynamicAppCall(ONTD_ADDRESS, Approve_MethodName, [self, exchange_addr, ontdBought]))
+
     # Invoke another exchange to convert ontdBought amount native asset to tokens_bought amount of another token
     assert (DynamicAppCall(exchange_addr, OntToTokenTransferOutput_MethodName, [tokens_bought, deadline, recipient, self, ontdBought]))
     return tokensSold
