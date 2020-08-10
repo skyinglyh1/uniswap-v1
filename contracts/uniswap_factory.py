@@ -67,6 +67,9 @@ def createExchange(token_hash):
     # Ensure templateCode existgetExchange
     templateScript = Get(GetContext(), EXCHANGE_TEMPLATE_KEY)
     assert (len(templateScript) > 0)
+    # Make sure the token_hash has not been used to create exchange before
+    assert (len(getExchange(token_hash)) == 0)
+
     tokenCount = Get(GetContext(), TOKEN_COUNT_KEY)
 
     # Append unused byte code to avm code to produce different contract hash, yet same executable opcode
