@@ -54,8 +54,7 @@ def Main(operation, args):
 
 
 def intitializeFactory(template):
-    # TODO: uncommit the next line when used in mainnet, there we do not use it for the convenience of testing
-    # assert (len(Get(GetContext(), EXCHANGE_TEMPLATE_KEY)) == 0)
+    assert (len(Get(GetContext(), EXCHANGE_TEMPLATE_KEY)) == 0)
     Put(GetContext(), EXCHANGE_TEMPLATE_KEY, template)
     Notify(["intitializeFactory", template])
     return True
@@ -70,7 +69,7 @@ def createExchange(token_hash):
     assert (len(templateScript) > 0)
     tokenCount = Get(GetContext(), TOKEN_COUNT_KEY)
 
-    # # append unused byte code to avm code to produce different contract
+    # Append unused byte code to avm code to produce different contract hash, yet same executable opcode
     newTokenCount = tokenCount + 1
     templateScript = concat(templateScript, newTokenCount)
 
