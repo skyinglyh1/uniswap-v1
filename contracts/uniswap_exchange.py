@@ -281,11 +281,12 @@ def setup(token_addr, factory_addr):
     assert (len(factory) == 0 and len(token) == 0 and len(token_addr) == 20 and len(factory_addr) == 20)
     # Ensure being invoked by the contract with hash of factory_addr
     assert (CheckWitness(factory_addr))
-    # Ensure this method is not invoked by the normal account, yet by the smart contract
-    callerHash = GetCallingScriptHash()
-    entryHash = GetEntryScriptHash()
-    # If callerHash equals entryHash, that means being invoked by a normal account
-    assert (callerHash != entryHash)
+    # TODO: Delete this part of condition check based on testing team
+    # # Ensure this method is not invoked by the normal account, yet by the smart contract
+    # callerHash = GetCallingScriptHash()
+    # entryHash = GetEntryScriptHash()
+    # # If callerHash equals entryHash, that means being invoked by a normal account
+    # assert (callerHash != entryHash)
 
     # Store the token_addr
     Put(GetContext(), TOKEN_KEY, token_addr)

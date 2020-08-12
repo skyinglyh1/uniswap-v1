@@ -6,10 +6,10 @@ from ontology.libont import byte2int, hexstring2bytes, hexstring2address, bytes2
 from ontology.interop.Ontology.Native import Invoke
 from ontology.interop.Ontology.Contract import Migrate, Create, GetScript
 from ontology.interop.System.Action import RegisterAction
-from ontology.interop.Ontology.Runtime import Base58ToAddress
+from ontology.interop.Ontology.Runtime import Base58ToAddress, GetCurrentBlockHash
 from ontology.interop.System.Storage import Put, GetContext, Get, Delete
 from ontology.interop.System.ExecutionEngine import GetExecutingScriptHash
-from ontology.interop.System.Runtime import CheckWitness, Notify, Serialize, Deserialize
+from ontology.interop.System.Runtime import CheckWitness, Notify, Serialize, Deserialize, GetTime
 from ontology.builtins import concat, state
 from ontology.libont import bytearray_reverse, AddressFromVmCode
 from ontology.interop.System.App import RegisterAppCall, DynamicAppCall
@@ -74,7 +74,7 @@ def createExchange(token_hash):
 
     # Append unused byte code to avm code to produce different contract hash, yet same executable opcode
     newTokenCount = tokenCount + 1
-    templateScript = concat(templateScript, newTokenCount)
+    templateScript = concat(templateScript, concat(concat(concat(GetExecutingScriptHash(), GetCurrentBlockHash()), GetTime()), newTokenCount))
 
     # Deploy replica contract
     assert (Create(templateScript, True, "uniswap_exchange", "1.0", "uniswap_factory", "email", "uniswap_exchange contract created by uniswap_factory contract"))
