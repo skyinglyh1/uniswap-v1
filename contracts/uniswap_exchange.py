@@ -385,9 +385,8 @@ def removeLiquidity(amount, min_ontd, min_tokens, deadline, withdrawer):
     assert (tokenAmount >= min_ontd and tokenAmount >= min_tokens)
     # Update withdrawer's balance and total supply
     oldBalance = balanceOf(withdrawer)
-    newBalance = oldBalance - amount
-    assert (newBalance < oldBalance)
-    Put(GetContext(), concat(BALANCE_PREFIX, withdrawer), newBalance)
+    assert (amount <= oldBalance)
+    Put(GetContext(), concat(BALANCE_PREFIX, withdrawer), oldBalance - amount)
     Put(GetContext(), TOTAL_SUPPLY_KEY, curSupply - amount)
 
     # Transfer ontdAmount of native asset to withdrawer
