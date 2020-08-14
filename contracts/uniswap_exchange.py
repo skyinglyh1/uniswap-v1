@@ -282,6 +282,7 @@ def setup(token_addr, factory_addr):
     # Ensure being invoked by the contract with hash of factory_addr
     assert (CheckWitness(factory_addr))
     assert (token_addr != GetExecutingScriptHash())
+    assert (token_addr != ONTD_ADDRESS)
     # Store the token_addr
     Put(GetContext(), TOKEN_KEY, token_addr)
     Put(GetContext(), FACTORY_KEY, factory_addr)
