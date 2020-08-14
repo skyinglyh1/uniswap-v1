@@ -281,13 +281,7 @@ def setup(token_addr, factory_addr):
     assert (len(factory) == 0 and len(token) == 0 and len(token_addr) == 20 and len(factory_addr) == 20)
     # Ensure being invoked by the contract with hash of factory_addr
     assert (CheckWitness(factory_addr))
-    # TODO: Delete this part of condition check based on testing team
-    # # Ensure this method is not invoked by the normal account, yet by the smart contract
-    # callerHash = GetCallingScriptHash()
-    # entryHash = GetEntryScriptHash()
-    # # If callerHash equals entryHash, that means being invoked by a normal account
-    # assert (callerHash != entryHash)
-
+    assert (token_addr != GetExecutingScriptHash())
     # Store the token_addr
     Put(GetContext(), TOKEN_KEY, token_addr)
     Put(GetContext(), FACTORY_KEY, factory_addr)
@@ -299,7 +293,7 @@ def setup(token_addr, factory_addr):
 
 def addLiquidity(min_liquidity, max_tokens, deadline, depositer, deposit_ontd_amt):
     """
-    Deposit ONG and Tokens at current ratio to mint UNI tokens
+    Deposit ONT and Tokens at current ratio to mint UNI tokens
 
     :param min_liquidity: Condition check to help depositer define minimum share minted to himself
     :param max_tokens: Maximum number of tokens deposited. Deposits max amount if total UNI supply is 0
@@ -317,7 +311,6 @@ def addLiquidity(min_liquidity, max_tokens, deadline, depositer, deposit_ontd_am
     assert (DynamicAppCall(ONTD_ADDRESS, Transfer_MethodName, [depositer, self, deposit_ontd_amt]))
     curSupply= totalSupply()
     tokenAddr = tokenAddress()
-    tokenAmount = 0
     liquidityMinted = 0
     if curSupply > 0:
         assert (min_liquidity > 0)
@@ -326,7 +319,8 @@ def addLiquidity(min_liquidity, max_tokens, deadline, depositer, deposit_ontd_am
         # Get OEP4 asset balance of current contract
         tokenReserve = DynamicAppCall(tokenAddr, BalanceOf_MethodName, [self])
         # Calculate the token increment correlated with deposit_ont_amt
-        tokenAmount = deposit_ontd_amt * tokenReserve / ontdReserve + 1
+        # Optimize here, ethereum version: tokenAmount = deposit_ontd_amt * tokenReserve / ontdReserve + 1
+        tokenAmount = (deposit_ontd_amt * tokenReserve + ontdReserve - 1) / ontdReserve
         # Calculate how many token should be minted as shares for the provider
         liquidityMinted = deposit_ontd_amt * curSupply / ontdReserve
         # Check if conditions are met
@@ -382,12 +376,21 @@ def removeLiquidity(amount, min_ontd, min_tokens, deadline, withdrawer):
     # Calculate how much native asset should be withdrawn by the withdrawer
     ontdAmount = amount * ontdReserve / curSupply
     # Ensure the calculated withdrawn amounts are no less than required, otherwise, roll back this tx
-    assert (tokenAmount >= min_ontd and tokenAmount >= min_tokens)
+    assert (ontdAmount >= min_ontd and tokenAmount >= min_tokens)
     # Update withdrawer's balance and total supply
     oldBalance = balanceOf(withdrawer)
-    assert (amount <= oldBalance)
-    Put(GetContext(), concat(BALANCE_PREFIX, withdrawer), oldBalance - amount)
-    Put(GetContext(), TOTAL_SUPPLY_KEY, curSupply - amount)
+    assert (amount <= oldBalance and amount <= curSupply)
+
+    newBalance = oldBalance - amount
+    newSupply = curSupply - amount
+    if newBalance == 0:
+        Delete(GetContext(), concat(BALANCE_PREFIX, withdrawer))
+    else:
+        Put(GetContext(), concat(BALANCE_PREFIX, withdrawer), oldBalance - amount)
+    if newSupply == 0:
+        Delete(GetContext(), TOTAL_SUPPLY_KEY)
+    else:
+        Put(GetContext(), TOTAL_SUPPLY_KEY, curSupply - amount)
 
     # Transfer ontdAmount of native asset to withdrawer
     assert (DynamicAppCall(ONTD_ADDRESS, Transfer_MethodName, [self, withdrawer, ontdAmount]))
@@ -932,6 +935,8 @@ def _getOutputPrice(output_amount, input_reserve, output_reserve):
             ir * or = [ir + ia * (1 - fee)] * (or - oa)
     3. Conclusion:
             ia = ir * oa / [(or - oa) * (1 - fee)] + 1
+    4. optimal conclusion:
+            ia = [ir * oa + (or - oa) * (1 - fee) -1 ] / [(or - oa) * (1 - fee)]
     :param input_amount:
     :param input_reserve:
     :param output_reserve:
@@ -940,7 +945,7 @@ def _getOutputPrice(output_amount, input_reserve, output_reserve):
     assert (input_reserve > 0 and output_reserve > 0 and output_reserve > output_amount)
     numerator = input_reserve * output_amount * 10000
     denominator = (output_reserve - output_amount) * 9975
-    return numerator / denominator + 1
+    return (numerator + denominator - 1) / denominator
 
 
 

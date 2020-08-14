@@ -26,7 +26,7 @@ TOKEN_TO_EXCHANGE_PREFIX = "tokenToEx"
 EXCHANGE_TO_TOKEN_PREFIX = "ExToToken"
 ID_TO_TOKEN_PREFIX = "IdToToken"
 
-IntitializeFactoryEvent = RegisterAction("InitializeFactory", "templateScript")
+IntitializeFactoryEvent = RegisterAction("InitializeFactory", "templateScriptHash")
 NewExchangeEvent = RegisterAction("NewExchange", "token_addr", "exchange_addr")
 
 def Main(operation, args):
@@ -56,7 +56,8 @@ def Main(operation, args):
 def intitializeFactory(template):
     assert (len(Get(GetContext(), EXCHANGE_TEMPLATE_KEY)) == 0)
     Put(GetContext(), EXCHANGE_TEMPLATE_KEY, template)
-    Notify(["intitializeFactory", template])
+    # Fire template hash
+    IntitializeFactoryEvent(AddressFromVmCode(template))
     return True
 
 
