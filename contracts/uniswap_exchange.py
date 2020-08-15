@@ -475,6 +475,8 @@ def _ontToTokenOutput(tokens_bought, max_ontd, deadline, buyer, recipient):
     assert (DynamicAppCall(ONTD_ADDRESS, TransferFrom_MethodName, [self, buyer, self, ontdSold]))
     # Transfer tokens_bought amount of token from contract to recipient account address
     assert (DynamicAppCall(tokenHash, Transfer_MethodName, [self, recipient, tokens_bought]))
+    # Fire event
+    TokenPurchaseEvent(buyer, ontdSold, tokens_bought)
     return ontdSold
 
 def ontToTokenSwapOutput(tokens_bought, deadline, invoker, ontd_amount):
@@ -711,6 +713,9 @@ def _tokenToTokenOutput(tokens_bought, max_tokens_sold, max_ont_sold, deadline, 
 
     # Invoke another exchange to convert ontdBought amount native asset to tokens_bought amount of another token
     assert (DynamicAppCall(exchange_addr, OntToTokenTransferOutput_MethodName, [tokens_bought, deadline, recipient, self, ontdBought]))
+
+    # Fire event
+    OntPurchaseEvent(buyer, tokensSold, ontdBought)
     return tokensSold
 
 
