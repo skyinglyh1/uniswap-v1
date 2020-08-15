@@ -308,8 +308,7 @@ def addLiquidity(min_liquidity, max_tokens, deadline, depositer, deposit_ontd_am
     # Check depositer's signature
     assert (CheckWitness(depositer))
     self = GetExecutingScriptHash()
-    # Transfer deposit_amt amount of ontd into this contract
-    assert (DynamicAppCall(ONTD_ADDRESS, Transfer_MethodName, [depositer, self, deposit_ontd_amt]))
+
     curSupply= totalSupply()
     tokenAddr = tokenAddress()
     liquidityMinted = 0
@@ -341,6 +340,8 @@ def addLiquidity(min_liquidity, max_tokens, deadline, depositer, deposit_ontd_am
         initialLiquidity = deposit_ontd_amt
         Put(GetContext(), concat(BALANCE_PREFIX, depositer), initialLiquidity)
         Put(GetContext(), TOTAL_SUPPLY_KEY, initialLiquidity)
+    # Transfer deposit_amt amount of ontd into this contract
+    assert (DynamicAppCall(ONTD_ADDRESS, Transfer_MethodName, [depositer, self, deposit_ontd_amt]))
     # Transfer token from depositer to current contract
     assert (DynamicAppCall(tokenAddr, TransferFrom_MethodName, [self, depositer, self, tokenAmount]))
     # Fire event
