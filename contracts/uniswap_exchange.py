@@ -26,7 +26,7 @@ TOTAL_SUPPLY_KEY = "totalSupply"
 BALANCE_PREFIX = "balance"
 APPROVE_PREFIX = "allowance"
 
-TOKEN_KEY = "token12"
+TOKEN_KEY = "token"
 FACTORY_KEY = "factory"
 
 # Event format
@@ -281,7 +281,9 @@ def setup(token_addr, factory_addr):
     assert (len(factory) == 0 and len(token) == 0 and len(token_addr) == 20 and len(factory_addr) == 20)
     # Ensure being invoked by the contract with hash of factory_addr
     assert (CheckWitness(factory_addr))
+    # token_addr cannot be self
     assert (token_addr != GetExecutingScriptHash())
+    # token_addr cannot be ontd contract address
     assert (token_addr != ONTD_ADDRESS)
     # Store the token_addr
     Put(GetContext(), TOKEN_KEY, token_addr)
