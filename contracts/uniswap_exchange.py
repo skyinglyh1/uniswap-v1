@@ -339,9 +339,9 @@ def addLiquidity(min_liquidity, max_tokens, deadline, depositer, deposit_ontd_am
         assert (exchange == self)
         # Update the depositer's share balance and the total supply
         tokenAmount = max_tokens
-        initialLiquidity = deposit_ontd_amt
-        Put(GetContext(), concat(BALANCE_PREFIX, depositer), initialLiquidity)
-        Put(GetContext(), TOTAL_SUPPLY_KEY, initialLiquidity)
+        liquidityMinted = deposit_ontd_amt
+        Put(GetContext(), concat(BALANCE_PREFIX, depositer), liquidityMinted)
+        Put(GetContext(), TOTAL_SUPPLY_KEY, liquidityMinted)
     # Transfer deposit_amt amount of ontd into this contract
     assert (DynamicAppCall(ONTD_ADDRESS, Transfer_MethodName, [depositer, self, deposit_ontd_amt]))
     # Transfer token from depositer to current contract
